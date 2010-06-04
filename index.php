@@ -2025,7 +2025,6 @@ if($requri != "install")
 					<?php } ?>
 
 					pasteEnterH = $('#pasteEnter').height();
-					alert(pasteEnterH + " Shit");
 
 					if(!$.browser.webkit)
 						$("textarea").resizehandle();

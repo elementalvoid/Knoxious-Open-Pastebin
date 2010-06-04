@@ -1,0 +1,532 @@
+<!DOCTYPE html> 
+<!-- HTML5 Doctype! --> 
+	<html xmlns="http://www.w3.org/1999/xhtml"> 
+	<head> 
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+		<title>Sample Pastebin Form</title> 
+		</head> 
+	<body><div id="siteWrapper">
+	<h1>Developer API</h1>
+	<div><strong>Getting settings off the pastebin</strong></div>
+	<div>This is done by going to either: http://yourdomain.com/defaults or http://yourdomain.com/index.php?defaults</div>
+	<div>The JSON response looks something like this...</div>
+	<div><code><pre>{
+	"name":			"Your Pastebin Name/Title",
+	"url":			"http://yourdomain.com",
+	"author":		"Default Author Name",
+	"text": 		1,
+	"max_paste_size":	262144,
+	"editing": 		1,
+	"api":			"http://yourdomain.com/api",
+	"api_adaptor":		"http://yourdomain.com/api-adaptor/sharpshooter.php",
+	"clipboard":		"/relative/path/to/_clipboard.swf",
+	"images":		20971520,
+	"image_extensions":	"jpg, gif, png",
+	"image_download":	1,
+	"url_redirection":	1,
+	"jQuery":		1,
+	"syntax":		1,
+	"line_highlight":	"@@",
+	"video":		1,
+	"url_format":		"http://yourdomain.com/[id]",
+	"lifespan":		{
+					"0":		"Never",
+					"1":		"10 minutes",
+					"2":		"1 day"
+				},
+	"privacy":		1
+
+}</pre></code></div>
+	<div>&nbsp;</div>
+	<div>Response is always in JSON format, Valid <em>POST</em> requests produce the following.<br /><strong>Success:</strong></div>
+	<div><code><pre>{ "id": "[id]", "url": "http://yourdomain.com/[id]", "error": 0, "message": "Success" }
+
+or
+
+{ "id": "[id]", "url": "http://yourdomain.com/index.php?[id]", "error": 0, "message": "Success" }</pre></code></div>
+<div>Please note that if the content of pasteEnter is a URL and URL forwarding is enabled the above URL will be suffixed with an exclamation mark (!) for security reasons.</div>
+	<div>&nbsp;</div>
+	<div><strong>Error Codes:</strong></div>
+	<div>Example<br /><code><pre>{ "id": 0, "url": "http://yourdomain.com/[id]", "error": "E01a", "message": "Invalid POST request or 'pasteEnter' is Too Big / Empty." }</pre></code></div>
+	<div><code><pre>+	E01a: Invalid POST request or 'pasteEnter' is Empty.
++	E01b: Spam protection activated, Paste is too Short.
++	E01c: Spam protection activated.
++	E02a: Invalid file format.
++	E02b: File is too big.
++	E02c: Error copying file.
++	E02d: Image hosting disabled!</pre></code></div>
+	<div>&nbsp;</div>
+	<div><strong>Required Parameters:</strong></div>
+	<div><code><pre>+	pasteEnter (string)
++	lifespan (int, 0 issues default)</pre></code></div>
+	<div>&nbsp;</div>
+	<div><strong>Recommended Parameters:</strong></div>
+	<div><code><pre>+	author (string)
++	email (null, hidden with CSS and is used for anti-spam)
++	highligher (string, Values obtained from GeSHi - http://qbnz.com/highlighter/)</pre></code></div>
+	<div>&nbsp;</div>
+	<div><strong>Optional Parameters:</strong></div>
+	<div><code><pre>+	pasteImage (file)
++	urlField (string - used for forced URL forwarding if enabled)
++	parent (string)
++	imageUrl (string - used to force Image Download if enabled)</pre></code></div>
+	<div>&nbsp;</div>
+
+
+	<div><strong>Sample form HTML:</strong></div>
+	<code><pre>&lt;!-- HTML5 Doctype! --&gt; 
+	&lt;html xmlns=&quot;http://www.w3.org/1999/xhtml&quot;&gt; 
+	&lt;head&gt; 
+		&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt; 
+		&lt;title&gt;Sample Pastebin Form&lt;/title&gt; 
+	&lt;/head&gt; 
+	&lt;body&gt;&lt;div id=&quot;siteWrapper&quot;&gt;
+				&lt;div id=&quot;formContainer&quot;&gt; 
+					&lt;form id=&quot;pasteForm&quot; action=&quot;http://yourdomain.com/api&quot; method=&quot;post&quot; name=&quot;pasteForm&quot; enctype=&quot;multipart/form-data&quot;&gt; 
+						&lt;div&gt;&lt;label for=&quot;pasteEnter&quot;&gt;Paste your text here! To highlight lines, prefix them with &lt;em&gt;@@&lt;/em&gt;&lt;/label&gt;&lt;br /&gt; 
+						&lt;textarea id=&quot;pasteEnter&quot; name=&quot;pasteEnter&quot; onblur=&quot;javascript:checkIfURL(this);&quot;&gt;&lt;/textarea&gt;&lt;/div&gt; 
+						&lt;div id=&quot;foundURL&quot; style=&quot;display: none;&quot;&gt;URL has been detected...&lt;/div&gt; 
+						&lt;div class=&quot;spacer&quot;&gt;&amp;nbsp;&lt;/div&gt; 
+						&lt;div id=&quot;secondaryFormContainer&quot;&gt; 
+						&lt;div id=&quot;authorContainer&quot;&gt;&lt;label for=&quot;author&quot;&gt;Your Name&lt;/label&gt;&lt;br /&gt; 
+						&lt;input type=&quot;text&quot; name=&quot;author&quot; id=&quot;authorEnter&quot; value=&quot;Anonymous&quot; onfocus=&quot;if(this.value==&#39;Anonymous&#39;)this.value=&#39;&#39;;&quot; onblur=&quot;if(this.value==&#39;&#39;)this.value=&#39;Anonymous&#39;;&quot; maxlength=&quot;32&quot; /&gt;&lt;/div&gt; 
+						&lt;div id=&quot;fileUploadContainer&quot;&gt;&lt;input type=&quot;hidden&quot; name=&quot;MAX_FILE_SIZE&quot; value=&quot;2097152&quot; /&gt;&lt;label&gt;Attach an Image (jpg, gif, png &amp;raquo; Max size 2 Mb)&lt;/label&gt;&lt;br /&gt;&lt;input type=&quot;file&quot; name=&quot;pasteImage&quot; id=&quot;pasteImage&quot; /&gt;&lt;br /&gt;(Optional)&lt;/div&gt; 
+						&lt;div class=&quot;spacer&quot;&gt;&amp;nbsp;&lt;/div&gt; 
+						&lt;input type=&quot;hidden&quot; name=&quot;lifespan&quot; value=&quot;0&quot; /&gt;&lt;!-- default value --&gt;
+						&lt;input type=&quot;text&quot; name=&quot;email&quot; id=&quot;poison&quot; style=&quot;display: none;&quot; /&gt; 
+						&lt;div id=&quot;submitContainer&quot; class=&quot;submitContainer&quot;&gt; 
+							&lt;input type=&quot;submit&quot; name=&quot;submit&quot; value=&quot;Submit your paste&quot; onclick=&quot;return submitPaste(this);&quot; id=&quot;submitButton&quot; /&gt; 
+						&lt;/div&gt; 
+						&lt;/div&gt; 
+					&lt;/form&gt; 
+				&lt;/div&gt;
+	&lt;/div&gt; 
+&lt;/html&gt;  </pre></code>
+<hr />
+				<div id="formContainer"> 
+					<form id="pasteForm" action="http://yourdomain.com/index.php?api" method="post" name="pasteForm" enctype="multipart/form-data"> 
+						<div><label for="pasteEnter">Paste your text here! To highlight lines, prefix them with <em>@@</em></span></label><br /> 
+						<textarea id="pasteEnter" name="pasteEnter" onblur="javascript:checkIfURL(this);"></textarea></div> 
+						<div id="foundURL" style="display: none;">URL has been detected...</div> 
+						<div class="spacer">&nbsp;</div> 
+						<div id="secondaryFormContainer"> 
+						<div id="authorContainer"><label for="author">Your Name</label><br /> 
+						<input type="text" name="author" id="authorEnter" value="Anonymous" onfocus="if(this.value=='Anonymous')this.value='';" onblur="if(this.value=='')this.value='Anonymous';" maxlength="32" /></div> 
+						<div id="fileUploadContainer"><input type="hidden" name="MAX_FILE_SIZE" value="2097152" /><label>Attach an Image (jpg, gif, png &raquo; Max size 2 Mb)</label><br /><input type="file" name="pasteImage" id="pasteImage" /><br />(Optional)</div> 
+						<div class="spacer">&nbsp;</div> 
+						<input type="hidden" name="lifespan" value="0" /><!-- default value -->
+						<input type="text" name="email" id="poison" style="display: none;" /> 
+						<div id="submitContainer" class="submitContainer"> 
+							<input type="submit" name="submit" value="Submit your paste" onclick="return submitPaste(this);" id="submitButton" /> 
+						</div> 
+						</div> 
+					</form> 
+				</div>
+
+<div>&nbsp;</div>
+<div>&nbsp;</div>
+<div><strong>Sample syntax highlighting select box</strong></div>
+<div>
+	<code><pre>
+&lt;select name=&quot;highlighter&quot;&gt; 
+	&lt;option value=&quot;plaintext&quot;&gt;None&lt;/option&gt; 
+	&lt;option value=&quot;plaintext&quot;&gt;-------------&lt;/option&gt; 
+	&lt;option value=&quot;bash&quot;&gt;Bash&lt;/option&gt; 
+	&lt;option value=&quot;c&quot;&gt;C&lt;/option&gt; 
+	&lt;option value=&quot;cpp&quot;&gt;C++&lt;/option&gt; 
+	&lt;option value=&quot;css&quot;&gt;CSS&lt;/option&gt; 
+	&lt;option value=&quot;html4strict&quot;&gt;HTML&lt;/option&gt; 
+	&lt;option value=&quot;java&quot;&gt;Java&lt;/option&gt; 
+	&lt;option value=&quot;javascript&quot;&gt;Javascript&lt;/option&gt; 
+	&lt;option value=&quot;jquery&quot;&gt;jQuery&lt;/option&gt; 
+	&lt;option value=&quot;latex&quot;&gt;LaTeX&lt;/option&gt; 
+	&lt;option value=&quot;mirc&quot;&gt;mIRC Scripting&lt;/option&gt; 
+	&lt;option value=&quot;perl&quot;&gt;Perl&lt;/option&gt; 
+	&lt;option value=&quot;php&quot;&gt;PHP&lt;/option&gt; 
+	&lt;option value=&quot;python&quot;&gt;Python&lt;/option&gt; 
+	&lt;option value=&quot;rails&quot;&gt;Rails&lt;/option&gt; 
+	&lt;option value=&quot;ruby&quot;&gt;Ruby&lt;/option&gt; 
+	&lt;option value=&quot;sql&quot;&gt;SQL&lt;/option&gt; 
+	&lt;option value=&quot;xml&quot;&gt;XML&lt;/option&gt; 
+	&lt;option value=&quot;plaintext&quot;&gt;-------------&lt;/option&gt; 
+	&lt;option value=&quot;4cs&quot;&gt;GADV 4CS&lt;/option&gt; 
+	&lt;option value=&quot;abap&quot;&gt;ABAP&lt;/option&gt; 
+	&lt;option value=&quot;actionscript&quot;&gt;ActionScript&lt;/option&gt; 
+	&lt;option value=&quot;actionscript3&quot;&gt;ActionScript 3&lt;/option&gt; 
+	&lt;option value=&quot;ada&quot;&gt;Ada&lt;/option&gt; 
+	&lt;option value=&quot;apache&quot;&gt;Apache configuration&lt;/option&gt; 
+	&lt;option value=&quot;applescript&quot;&gt;AppleScript&lt;/option&gt; 
+	&lt;option value=&quot;apt_sources&quot;&gt;Apt sources&lt;/option&gt; 
+	&lt;option value=&quot;asm&quot;&gt;ASM&lt;/option&gt; 
+	&lt;option value=&quot;asp&quot;&gt;ASP&lt;/option&gt; 
+	&lt;option value=&quot;autoconf&quot;&gt;Autoconf&lt;/option&gt; 
+	&lt;option value=&quot;autohotkey&quot;&gt;Autohotkey&lt;/option&gt; 
+	&lt;option value=&quot;autoit&quot;&gt;AutoIt&lt;/option&gt; 
+	&lt;option value=&quot;avisynth&quot;&gt;AviSynth&lt;/option&gt; 
+	&lt;option value=&quot;awk&quot;&gt;awk&lt;/option&gt; 
+	&lt;option value=&quot;bash&quot;&gt;Bash&lt;/option&gt; 
+	&lt;option value=&quot;basic4gl&quot;&gt;Basic4GL&lt;/option&gt; 
+	&lt;option value=&quot;bf&quot;&gt;Brainfuck&lt;/option&gt; 
+	&lt;option value=&quot;bibtex&quot;&gt;BibTeX&lt;/option&gt; 
+	&lt;option value=&quot;blitzbasic&quot;&gt;BlitzBasic&lt;/option&gt; 
+	&lt;option value=&quot;bnf&quot;&gt;bnf&lt;/option&gt; 
+	&lt;option value=&quot;boo&quot;&gt;Boo&lt;/option&gt; 
+	&lt;option value=&quot;c&quot;&gt;C&lt;/option&gt; 
+	&lt;option value=&quot;c_mac&quot;&gt;C (Mac)&lt;/option&gt; 
+	&lt;option value=&quot;caddcl&quot;&gt;CAD DCL&lt;/option&gt; 
+	&lt;option value=&quot;cadlisp&quot;&gt;CAD Lisp&lt;/option&gt; 
+	&lt;option value=&quot;cfdg&quot;&gt;CFDG&lt;/option&gt; 
+	&lt;option value=&quot;cfm&quot;&gt;ColdFusion&lt;/option&gt; 
+	&lt;option value=&quot;chaiscript&quot;&gt;ChaiScript&lt;/option&gt; 
+	&lt;option value=&quot;cil&quot;&gt;CIL&lt;/option&gt; 
+	&lt;option value=&quot;clojure&quot;&gt;Clojure&lt;/option&gt; 
+	&lt;option value=&quot;cmake&quot;&gt;CMake&lt;/option&gt; 
+	&lt;option value=&quot;cobol&quot;&gt;COBOL&lt;/option&gt; 
+	&lt;option value=&quot;cpp&quot;&gt;C++&lt;/option&gt; 
+	&lt;option value=&quot;cpp-qt&quot; class=&quot;sublang&quot;&gt;&amp;nbsp;&amp;nbsp;C++ (QT)&lt;/option&gt; 
+	&lt;option value=&quot;csharp&quot;&gt;C#&lt;/option&gt; 
+	&lt;option value=&quot;css&quot;&gt;CSS&lt;/option&gt; 
+	&lt;option value=&quot;cuesheet&quot;&gt;Cuesheet&lt;/option&gt; 
+	&lt;option value=&quot;d&quot;&gt;D&lt;/option&gt; 
+	&lt;option value=&quot;dcs&quot;&gt;DCS&lt;/option&gt; 
+	&lt;option value=&quot;delphi&quot;&gt;Delphi&lt;/option&gt; 
+	&lt;option value=&quot;diff&quot;&gt;Diff&lt;/option&gt; 
+	&lt;option value=&quot;div&quot;&gt;DIV&lt;/option&gt; 
+	&lt;option value=&quot;dos&quot;&gt;DOS&lt;/option&gt; 
+	&lt;option value=&quot;dot&quot;&gt;dot&lt;/option&gt; 
+	&lt;option value=&quot;ecmascript&quot;&gt;ECMAScript&lt;/option&gt; 
+	&lt;option value=&quot;eiffel&quot;&gt;Eiffel&lt;/option&gt; 
+	&lt;option value=&quot;email&quot;&gt;eMail (mbox)&lt;/option&gt; 
+	&lt;option value=&quot;erlang&quot;&gt;Erlang&lt;/option&gt; 
+	&lt;option value=&quot;fo&quot;&gt;FO (abas-ERP)&lt;/option&gt; 
+	&lt;option value=&quot;fortran&quot;&gt;Fortran&lt;/option&gt; 
+	&lt;option value=&quot;freebasic&quot;&gt;FreeBasic&lt;/option&gt; 
+	&lt;option value=&quot;fsharp&quot;&gt;F#&lt;/option&gt; 
+	&lt;option value=&quot;gambas&quot;&gt;GAMBAS&lt;/option&gt; 
+	&lt;option value=&quot;gdb&quot;&gt;GDB&lt;/option&gt; 
+	&lt;option value=&quot;genero&quot;&gt;genero&lt;/option&gt; 
+	&lt;option value=&quot;genie&quot;&gt;Genie&lt;/option&gt; 
+	&lt;option value=&quot;gettext&quot;&gt;GNU Gettext&lt;/option&gt; 
+	&lt;option value=&quot;glsl&quot;&gt;glSlang&lt;/option&gt; 
+	&lt;option value=&quot;gml&quot;&gt;GML&lt;/option&gt; 
+	&lt;option value=&quot;gnuplot&quot;&gt;Gnuplot&lt;/option&gt; 
+	&lt;option value=&quot;groovy&quot;&gt;Groovy&lt;/option&gt; 
+	&lt;option value=&quot;gwbasic&quot;&gt;GwBasic&lt;/option&gt; 
+	&lt;option value=&quot;haskell&quot;&gt;Haskell&lt;/option&gt; 
+	&lt;option value=&quot;hicest&quot;&gt;HicEst&lt;/option&gt; 
+	&lt;option value=&quot;hq9plus&quot;&gt;HQ9+&lt;/option&gt; 
+	&lt;option value=&quot;html4strict&quot;&gt;HTML&lt;/option&gt; 
+	&lt;option value=&quot;icon&quot;&gt;Icon&lt;/option&gt; 
+	&lt;option value=&quot;idl&quot;&gt;Uno Idl&lt;/option&gt; 
+	&lt;option value=&quot;ini&quot;&gt;INI&lt;/option&gt; 
+	&lt;option value=&quot;inno&quot;&gt;Inno&lt;/option&gt; 
+	&lt;option value=&quot;intercal&quot;&gt;INTERCAL&lt;/option&gt; 
+	&lt;option value=&quot;io&quot;&gt;Io&lt;/option&gt; 
+	&lt;option value=&quot;j&quot;&gt;J&lt;/option&gt; 
+	&lt;option value=&quot;java&quot;&gt;Java&lt;/option&gt; 
+	&lt;option value=&quot;java5&quot;&gt;Java(TM) 2 Platform Standard Edition 5.0&lt;/option&gt; 
+	&lt;option value=&quot;javascript&quot;&gt;Javascript&lt;/option&gt; 
+	&lt;option value=&quot;jquery&quot;&gt;jQuery&lt;/option&gt; 
+	&lt;option value=&quot;kixtart&quot;&gt;KiXtart&lt;/option&gt; 
+	&lt;option value=&quot;klonec&quot;&gt;KLone C&lt;/option&gt; 
+	&lt;option value=&quot;klonecpp&quot;&gt;KLone C++&lt;/option&gt; 
+	&lt;option value=&quot;latex&quot;&gt;LaTeX&lt;/option&gt; 
+	&lt;option value=&quot;lisp&quot;&gt;Lisp&lt;/option&gt; 
+	&lt;option value=&quot;locobasic&quot;&gt;Locomotive Basic&lt;/option&gt; 
+	&lt;option value=&quot;logtalk&quot;&gt;Logtalk&lt;/option&gt; 
+	&lt;option value=&quot;lolcode&quot;&gt;LOLcode&lt;/option&gt; 
+	&lt;option value=&quot;lotusformulas&quot;&gt;Lotus Notes @Formulas&lt;/option&gt; 
+	&lt;option value=&quot;lotusscript&quot;&gt;LotusScript&lt;/option&gt; 
+	&lt;option value=&quot;lscript&quot;&gt;LScript&lt;/option&gt; 
+	&lt;option value=&quot;lsl2&quot;&gt;LSL2&lt;/option&gt; 
+	&lt;option value=&quot;lua&quot;&gt;Lua&lt;/option&gt; 
+	&lt;option value=&quot;m68k&quot;&gt;Motorola 68000 Assembler&lt;/option&gt; 
+	&lt;option value=&quot;magiksf&quot;&gt;MagikSF&lt;/option&gt; 
+	&lt;option value=&quot;make&quot;&gt;GNU make&lt;/option&gt; 
+	&lt;option value=&quot;mapbasic&quot;&gt;MapBasic&lt;/option&gt; 
+	&lt;option value=&quot;matlab&quot;&gt;Matlab M&lt;/option&gt; 
+	&lt;option value=&quot;mirc&quot;&gt;mIRC Scripting&lt;/option&gt; 
+	&lt;option value=&quot;mmix&quot;&gt;MMIX&lt;/option&gt; 
+	&lt;option value=&quot;modula2&quot;&gt;Modula-2&lt;/option&gt; 
+	&lt;option value=&quot;modula3&quot;&gt;Modula-3&lt;/option&gt; 
+	&lt;option value=&quot;mpasm&quot;&gt;Microchip Assembler&lt;/option&gt; 
+	&lt;option value=&quot;mxml&quot;&gt;MXML&lt;/option&gt; 
+	&lt;option value=&quot;mysql&quot;&gt;MySQL&lt;/option&gt; 
+	&lt;option value=&quot;newlisp&quot;&gt;newlisp&lt;/option&gt; 
+	&lt;option value=&quot;nsis&quot;&gt;NSIS&lt;/option&gt; 
+	&lt;option value=&quot;oberon2&quot;&gt;Oberon-2&lt;/option&gt; 
+	&lt;option value=&quot;objc&quot;&gt;Objective-C&lt;/option&gt; 
+	&lt;option value=&quot;ocaml&quot;&gt;OCaml&lt;/option&gt; 
+	&lt;option value=&quot;ocaml-brief&quot; class=&quot;sublang&quot;&gt;&amp;nbsp;&amp;nbsp;OCaml (brief)&lt;/option&gt; 
+	&lt;option value=&quot;oobas&quot;&gt;OpenOffice.org Basic&lt;/option&gt; 
+	&lt;option value=&quot;oracle11&quot;&gt;Oracle 11 SQL&lt;/option&gt; 
+	&lt;option value=&quot;oracle8&quot;&gt;Oracle 8 SQL&lt;/option&gt; 
+	&lt;option value=&quot;oxygene&quot;&gt;Oxygene (Delphi Prism)&lt;/option&gt; 
+	&lt;option value=&quot;oz&quot;&gt;OZ&lt;/option&gt; 
+	&lt;option value=&quot;pascal&quot;&gt;Pascal&lt;/option&gt; 
+	&lt;option value=&quot;pcre&quot;&gt;PCRE&lt;/option&gt; 
+	&lt;option value=&quot;per&quot;&gt;per&lt;/option&gt; 
+	&lt;option value=&quot;perl&quot;&gt;Perl&lt;/option&gt; 
+	&lt;option value=&quot;perl6&quot;&gt;Perl 6&lt;/option&gt; 
+	&lt;option value=&quot;pf&quot;&gt;OpenBSD Packet Filter&lt;/option&gt; 
+	&lt;option value=&quot;php&quot; selected=&quot;selected&quot;&gt;PHP&lt;/option&gt; 
+	&lt;option value=&quot;php-brief&quot; class=&quot;sublang&quot;&gt;&amp;nbsp;&amp;nbsp;PHP (brief)&lt;/option&gt; 
+	&lt;option value=&quot;pic16&quot;&gt;PIC16&lt;/option&gt; 
+	&lt;option value=&quot;pike&quot;&gt;Pike&lt;/option&gt; 
+	&lt;option value=&quot;pixelbender&quot;&gt;Pixel Bender 1.0&lt;/option&gt; 
+	&lt;option value=&quot;plsql&quot;&gt;PL/SQL&lt;/option&gt; 
+	&lt;option value=&quot;postgresql&quot;&gt;PostgreSQL&lt;/option&gt; 
+	&lt;option value=&quot;povray&quot;&gt;POVRAY&lt;/option&gt; 
+	&lt;option value=&quot;powerbuilder&quot;&gt;PowerBuilder&lt;/option&gt; 
+	&lt;option value=&quot;powershell&quot;&gt;PowerShell&lt;/option&gt; 
+	&lt;option value=&quot;progress&quot;&gt;Progress&lt;/option&gt; 
+	&lt;option value=&quot;prolog&quot;&gt;Prolog&lt;/option&gt; 
+	&lt;option value=&quot;properties&quot;&gt;PROPERTIES&lt;/option&gt; 
+	&lt;option value=&quot;providex&quot;&gt;ProvideX&lt;/option&gt; 
+	&lt;option value=&quot;purebasic&quot;&gt;PureBasic&lt;/option&gt; 
+	&lt;option value=&quot;python&quot;&gt;Python&lt;/option&gt; 
+	&lt;option value=&quot;q&quot;&gt;q/kdb+&lt;/option&gt; 
+	&lt;option value=&quot;qbasic&quot;&gt;QBasic/QuickBASIC&lt;/option&gt; 
+	&lt;option value=&quot;rails&quot;&gt;Rails&lt;/option&gt; 
+	&lt;option value=&quot;rebol&quot;&gt;REBOL&lt;/option&gt; 
+	&lt;option value=&quot;reg&quot;&gt;Microsoft Registry&lt;/option&gt; 
+	&lt;option value=&quot;robots&quot;&gt;robots.txt&lt;/option&gt; 
+	&lt;option value=&quot;rpmspec&quot;&gt;RPM Specification File&lt;/option&gt; 
+	&lt;option value=&quot;rsplus&quot;&gt;R / S+&lt;/option&gt; 
+	&lt;option value=&quot;ruby&quot;&gt;Ruby&lt;/option&gt; 
+	&lt;option value=&quot;sas&quot;&gt;SAS&lt;/option&gt; 
+	&lt;option value=&quot;scala&quot;&gt;Scala&lt;/option&gt; 
+	&lt;option value=&quot;scheme&quot;&gt;Scheme&lt;/option&gt; 
+	&lt;option value=&quot;scilab&quot;&gt;SciLab&lt;/option&gt; 
+	&lt;option value=&quot;sdlbasic&quot;&gt;sdlBasic&lt;/option&gt; 
+	&lt;option value=&quot;smalltalk&quot;&gt;Smalltalk&lt;/option&gt; 
+	&lt;option value=&quot;smarty&quot;&gt;Smarty&lt;/option&gt; 
+	&lt;option value=&quot;sql&quot;&gt;SQL&lt;/option&gt; 
+	&lt;option value=&quot;systemverilog&quot;&gt;SystemVerilog&lt;/option&gt; 
+	&lt;option value=&quot;tcl&quot;&gt;TCL&lt;/option&gt; 
+	&lt;option value=&quot;teraterm&quot;&gt;Tera Term Macro&lt;/option&gt; 
+	&lt;option value=&quot;text&quot;&gt;Text&lt;/option&gt; 
+	&lt;option value=&quot;thinbasic&quot;&gt;thinBasic&lt;/option&gt; 
+	&lt;option value=&quot;tsql&quot;&gt;T-SQL&lt;/option&gt; 
+	&lt;option value=&quot;typoscript&quot;&gt;TypoScript&lt;/option&gt; 
+	&lt;option value=&quot;unicon&quot;&gt;Unicon (Unified Extended Dialect of Icon)&lt;/option&gt; 
+	&lt;option value=&quot;vala&quot;&gt;Vala&lt;/option&gt; 
+	&lt;option value=&quot;vb&quot;&gt;Visual Basic&lt;/option&gt; 
+	&lt;option value=&quot;vbnet&quot;&gt;vb.net&lt;/option&gt; 
+	&lt;option value=&quot;verilog&quot;&gt;Verilog&lt;/option&gt; 
+	&lt;option value=&quot;vhdl&quot;&gt;VHDL&lt;/option&gt; 
+	&lt;option value=&quot;vim&quot;&gt;Vim Script&lt;/option&gt; 
+	&lt;option value=&quot;visualfoxpro&quot;&gt;Visual Fox Pro&lt;/option&gt; 
+	&lt;option value=&quot;visualprolog&quot;&gt;Visual Prolog&lt;/option&gt; 
+	&lt;option value=&quot;whitespace&quot;&gt;Whitespace&lt;/option&gt; 
+	&lt;option value=&quot;whois&quot;&gt;Whois (RPSL format)&lt;/option&gt; 
+	&lt;option value=&quot;winbatch&quot;&gt;Winbatch&lt;/option&gt; 
+	&lt;option value=&quot;xbasic&quot;&gt;XBasic&lt;/option&gt; 
+	&lt;option value=&quot;xml&quot;&gt;XML&lt;/option&gt; 
+	&lt;option value=&quot;xorg_conf&quot;&gt;Xorg configuration&lt;/option&gt; 
+	&lt;option value=&quot;xpp&quot;&gt;X++&lt;/option&gt; 
+	&lt;option value=&quot;z80&quot;&gt;ZiLOG Z80 Assembler&lt;/option&gt; 
+&lt;/select&gt; 
+	</pre></code>
+</div>
+<hr />
+<select name="highlighter"> 
+	<option value="plaintext">None</option> 
+	<option value="plaintext">-------------</option> 
+	<option value="bash">Bash</option> 
+	<option value="c">C</option> 
+	<option value="cpp">C++</option> 
+	<option value="css">CSS</option> 
+	<option value="html4strict">HTML</option> 
+	<option value="java">Java</option> 
+	<option value="javascript">Javascript</option> 
+	<option value="jquery">jQuery</option> 
+	<option value="latex">LaTeX</option> 
+	<option value="mirc">mIRC Scripting</option> 
+	<option value="perl">Perl</option> 
+	<option value="php">PHP</option> 
+	<option value="python">Python</option> 
+	<option value="rails">Rails</option> 
+	<option value="ruby">Ruby</option> 
+	<option value="sql">SQL</option> 
+	<option value="xml">XML</option> 
+	<option value="plaintext">-------------</option> 
+	<option value="4cs">GADV 4CS</option> 
+	<option value="abap">ABAP</option> 
+	<option value="actionscript">ActionScript</option> 
+	<option value="actionscript3">ActionScript 3</option> 
+	<option value="ada">Ada</option> 
+	<option value="apache">Apache configuration</option> 
+	<option value="applescript">AppleScript</option> 
+	<option value="apt_sources">Apt sources</option> 
+	<option value="asm">ASM</option> 
+	<option value="asp">ASP</option> 
+	<option value="autoconf">Autoconf</option> 
+	<option value="autohotkey">Autohotkey</option> 
+	<option value="autoit">AutoIt</option> 
+	<option value="avisynth">AviSynth</option> 
+	<option value="awk">awk</option> 
+	<option value="bash">Bash</option> 
+	<option value="basic4gl">Basic4GL</option> 
+	<option value="bf">Brainfuck</option> 
+	<option value="bibtex">BibTeX</option> 
+	<option value="blitzbasic">BlitzBasic</option> 
+	<option value="bnf">bnf</option> 
+	<option value="boo">Boo</option> 
+	<option value="c">C</option> 
+	<option value="c_mac">C (Mac)</option> 
+	<option value="caddcl">CAD DCL</option> 
+	<option value="cadlisp">CAD Lisp</option> 
+	<option value="cfdg">CFDG</option> 
+	<option value="cfm">ColdFusion</option> 
+	<option value="chaiscript">ChaiScript</option> 
+	<option value="cil">CIL</option> 
+	<option value="clojure">Clojure</option> 
+	<option value="cmake">CMake</option> 
+	<option value="cobol">COBOL</option> 
+	<option value="cpp">C++</option> 
+	<option value="cpp-qt" class="sublang">&nbsp;&nbsp;C++ (QT)</option> 
+	<option value="csharp">C#</option> 
+	<option value="css">CSS</option> 
+	<option value="cuesheet">Cuesheet</option> 
+	<option value="d">D</option> 
+	<option value="dcs">DCS</option> 
+	<option value="delphi">Delphi</option> 
+	<option value="diff">Diff</option> 
+	<option value="div">DIV</option> 
+	<option value="dos">DOS</option> 
+	<option value="dot">dot</option> 
+	<option value="ecmascript">ECMAScript</option> 
+	<option value="eiffel">Eiffel</option> 
+	<option value="email">eMail (mbox)</option> 
+	<option value="erlang">Erlang</option> 
+	<option value="fo">FO (abas-ERP)</option> 
+	<option value="fortran">Fortran</option> 
+	<option value="freebasic">FreeBasic</option> 
+	<option value="fsharp">F#</option> 
+	<option value="gambas">GAMBAS</option> 
+	<option value="gdb">GDB</option> 
+	<option value="genero">genero</option> 
+	<option value="genie">Genie</option> 
+	<option value="gettext">GNU Gettext</option> 
+	<option value="glsl">glSlang</option> 
+	<option value="gml">GML</option> 
+	<option value="gnuplot">Gnuplot</option> 
+	<option value="groovy">Groovy</option> 
+	<option value="gwbasic">GwBasic</option> 
+	<option value="haskell">Haskell</option> 
+	<option value="hicest">HicEst</option> 
+	<option value="hq9plus">HQ9+</option> 
+	<option value="html4strict">HTML</option> 
+	<option value="icon">Icon</option> 
+	<option value="idl">Uno Idl</option> 
+	<option value="ini">INI</option> 
+	<option value="inno">Inno</option> 
+	<option value="intercal">INTERCAL</option> 
+	<option value="io">Io</option> 
+	<option value="j">J</option> 
+	<option value="java">Java</option> 
+	<option value="java5">Java(TM) 2 Platform Standard Edition 5.0</option> 
+	<option value="javascript">Javascript</option> 
+	<option value="jquery">jQuery</option> 
+	<option value="kixtart">KiXtart</option> 
+	<option value="klonec">KLone C</option> 
+	<option value="klonecpp">KLone C++</option> 
+	<option value="latex">LaTeX</option> 
+	<option value="lisp">Lisp</option> 
+	<option value="locobasic">Locomotive Basic</option> 
+	<option value="logtalk">Logtalk</option> 
+	<option value="lolcode">LOLcode</option> 
+	<option value="lotusformulas">Lotus Notes @Formulas</option> 
+	<option value="lotusscript">LotusScript</option> 
+	<option value="lscript">LScript</option> 
+	<option value="lsl2">LSL2</option> 
+	<option value="lua">Lua</option> 
+	<option value="m68k">Motorola 68000 Assembler</option> 
+	<option value="magiksf">MagikSF</option> 
+	<option value="make">GNU make</option> 
+	<option value="mapbasic">MapBasic</option> 
+	<option value="matlab">Matlab M</option> 
+	<option value="mirc">mIRC Scripting</option> 
+	<option value="mmix">MMIX</option> 
+	<option value="modula2">Modula-2</option> 
+	<option value="modula3">Modula-3</option> 
+	<option value="mpasm">Microchip Assembler</option> 
+	<option value="mxml">MXML</option> 
+	<option value="mysql">MySQL</option> 
+	<option value="newlisp">newlisp</option> 
+	<option value="nsis">NSIS</option> 
+	<option value="oberon2">Oberon-2</option> 
+	<option value="objc">Objective-C</option> 
+	<option value="ocaml">OCaml</option> 
+	<option value="ocaml-brief" class="sublang">&nbsp;&nbsp;OCaml (brief)</option> 
+	<option value="oobas">OpenOffice.org Basic</option> 
+	<option value="oracle11">Oracle 11 SQL</option> 
+	<option value="oracle8">Oracle 8 SQL</option> 
+	<option value="oxygene">Oxygene (Delphi Prism)</option> 
+	<option value="oz">OZ</option> 
+	<option value="pascal">Pascal</option> 
+	<option value="pcre">PCRE</option> 
+	<option value="per">per</option> 
+	<option value="perl">Perl</option> 
+	<option value="perl6">Perl 6</option> 
+	<option value="pf">OpenBSD Packet Filter</option> 
+	<option value="php">PHP</option> 
+	<option value="php-brief" class="sublang">&nbsp;&nbsp;PHP (brief)</option> 
+	<option value="pic16">PIC16</option> 
+	<option value="pike">Pike</option> 
+	<option value="pixelbender">Pixel Bender 1.0</option> 
+	<option value="plsql">PL/SQL</option> 
+	<option value="postgresql">PostgreSQL</option> 
+	<option value="povray">POVRAY</option> 
+	<option value="powerbuilder">PowerBuilder</option> 
+	<option value="powershell">PowerShell</option> 
+	<option value="progress">Progress</option> 
+	<option value="prolog">Prolog</option> 
+	<option value="properties">PROPERTIES</option> 
+	<option value="providex">ProvideX</option> 
+	<option value="purebasic">PureBasic</option> 
+	<option value="python">Python</option> 
+	<option value="q">q/kdb+</option> 
+	<option value="qbasic">QBasic/QuickBASIC</option> 
+	<option value="rails">Rails</option> 
+	<option value="rebol">REBOL</option> 
+	<option value="reg">Microsoft Registry</option> 
+	<option value="robots">robots.txt</option> 
+	<option value="rpmspec">RPM Specification File</option> 
+	<option value="rsplus">R / S+</option> 
+	<option value="ruby">Ruby</option> 
+	<option value="sas">SAS</option> 
+	<option value="scala">Scala</option> 
+	<option value="scheme">Scheme</option> 
+	<option value="scilab">SciLab</option> 
+	<option value="sdlbasic">sdlBasic</option> 
+	<option value="smalltalk">Smalltalk</option> 
+	<option value="smarty">Smarty</option> 
+	<option value="sql">SQL</option> 
+	<option value="systemverilog">SystemVerilog</option> 
+	<option value="tcl">TCL</option> 
+	<option value="teraterm">Tera Term Macro</option> 
+	<option value="text">Text</option> 
+	<option value="thinbasic">thinBasic</option> 
+	<option value="tsql">T-SQL</option> 
+	<option value="typoscript">TypoScript</option> 
+	<option value="unicon">Unicon (Unified Extended Dialect of Icon)</option> 
+	<option value="vala">Vala</option> 
+	<option value="vb">Visual Basic</option> 
+	<option value="vbnet">vb.net</option> 
+	<option value="verilog">Verilog</option> 
+	<option value="vhdl">VHDL</option> 
+	<option value="vim">Vim Script</option> 
+	<option value="visualfoxpro">Visual Fox Pro</option> 
+	<option value="visualprolog">Visual Prolog</option> 
+	<option value="whitespace">Whitespace</option> 
+	<option value="whois">Whois (RPSL format)</option> 
+	<option value="winbatch">Winbatch</option> 
+	<option value="xbasic">XBasic</option> 
+	<option value="xml">XML</option> 
+	<option value="xorg_conf">Xorg configuration</option> 
+	<option value="xpp">X++</option> 
+	<option value="z80">ZiLOG Z80 Assembler</option> 
+</select> 
+</html> 

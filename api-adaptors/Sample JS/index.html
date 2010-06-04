@@ -1,0 +1,23 @@
+<html>
+	<head>
+		<title>TestPage</title>
+		<script type="text/javascript" src="jQuery.js"></script>
+		<script type="text/javascript" src="apiConnect.js"></script>
+		<script type="text/javascript">
+			$(document).ready(function(){
+				_pztMeOptions.defaults = "http://pzt.me/text/index.php?defaults";
+				_pztMeOptions.method = "GET";
+				_pztMeOptions.pb_author = "API-Test";
+				_pztMeOptions.display_local = true;
+
+				$('#pztMeApp_askJS').hide()
+				$('#pztMeApp').show().pztMeApp();
+			});
+		</script>
+	</head>
+
+	<body>
+	<div id="pztMeApp_askJS">You must have Javascript enabled!!!</div>
+	<div id="pztMeApp" style="display: none;"></div>
+	</body>
+</html>

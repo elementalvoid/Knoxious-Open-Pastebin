@@ -137,6 +137,7 @@ $CONFIG['pb_recent_posts'] = 10;
 
 // Allow editing of pastes? (TRUE or FALSE)
 $CONFIG['pb_editing'] = FALSE;
+# $CONFIG['pb_editing'] = TRUE;
 
 // Maximum paste size in Bytes
 // recommend 512Kb to be the Maximum however 1Mb is do-able.
@@ -162,8 +163,7 @@ $CONFIG['pb_image_maxsize'] = 2097152;
 // Enable Video embedding? (TRUE or FALSE)
 $CONFIG['pb_video'] = FALSE;
 
-// Enable FlowPlayer for non HTML5 browsers
-// and playing .flv files? (Path or FALSE) Can be a URL.
+// Enable FlowPlayer for playing .flv files? (Path or FALSE) Can be a URL.
 // http://flowplayer.org
 $CONFIG['pb_flowplayer'] = FALSE;
 # $CONFIG['pb_flowplayer'] = "/path/to/flowplayer.swf";
@@ -176,6 +176,11 @@ $CONFIG['pb_url'] = FALSE;
 
 // Default Author Name (Anonymous usually a good start)
 $CONFIG['pb_author'] = "Anonymous";
+
+// Store a cookie for the authors name? (FALSE or time in seconds)
+// eg. 3600 == 1 hour, 86400 == 1 day
+$CONFIG['pb_author_cookie'] = FALSE;
+# $CONFIG['pb_author_cookie'] = 3600;
 
 // Paste Lifespan (age in days), array for multiple, FALSE for no expiry.
 // commented out is 1 week, 10 minutes, 1 hour, 1 day, 1 month and 1 year.
@@ -1315,10 +1320,16 @@ class bin
 				if((int)date("G") == 0)
 					$time[0] = 23;
 
-				$output = array(	strtoupper(sha1(md5($time[0] . $_SERVER['REMOTE_ADDR'] . $this->db->config['pb_pass'] . $_SERVER['SERVER_ADDR']. $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))),
-							strtoupper(sha1(md5($time[1] . $_SERVER['REMOTE_ADDR'] . $this->db->config['pb_pass'] . $_SERVER['SERVER_ADDR']. $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))),
-							strtoupper(sha1(md5($time[2] . $_SERVER['REMOTE_ADDR'] . $this->db->config['pb_pass'] . $_SERVER['SERVER_ADDR']. $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))));
+				$output = array(	strtoupper(sha1(md5($time[0] . $_SERVER['REMOTE_ADDR'] . $this->db->config['pb_pass'] . $_SERVER['SERVER_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))),
+							strtoupper(sha1(md5($time[1] . $_SERVER['REMOTE_ADDR'] . $this->db->config['pb_pass'] . $_SERVER['SERVER_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))),
+							strtoupper(sha1(md5($time[2] . $_SERVER['REMOTE_ADDR'] . $this->db->config['pb_pass'] . $_SERVER['SERVER_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))));
 
+				return $output;
+			}
+
+		public function cookieName()
+			{
+				$output = strtoupper(sha1(str_rot13(md5($_SERVER['REMOTE_ADDR'] . $this->db->config['pb_pass'] . $_SERVER['SERVER_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))));
 				return $output;
 			}
 
@@ -1328,8 +1339,7 @@ class bin
 				$type['youtube'] = stristr($url, "youtube.com");
 				$type['vimeo'] = stristr($url, "vimeo.com");
 				$type['dailymotion'] = stristr($url, "dailymotion.com");
-				$type['flv'] = $this->stristr_array($url, array('.flv', '.f4v'));
-				$type['html5'] = $this->stristr_array($url, array('.ogv', '.ogg', '.ogm', '.mp4', '.m4v'));
+				$type['flv'] = $this->stristr_array($url, array('.flv', '.f4v', 'mp4', 'm4v', 'm4p'));
 				$is = NULL;
 
 				if(!$this->db->config['pb_video'])
@@ -1347,7 +1357,6 @@ class bin
 					$output = "<object width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\"><param name=\"movie\" value=\"http://www.dailymotion.com/swf/{VIDEO}\" /><param name=\"allowFullScreen\" value=\"true\" /><param name=\"allowScriptAccess\" value=\"always\" /><embed src=\"http://www.dailymotion.com/swf/{VIDEO}\" type=\"application/x-shockwave-flash\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\" allowFullScreen=\"true\" allowScriptAccess=\"always\"></embed></object>";
 					$is = "dailymotion";
 				}
-
 				if($this->flowplayer())
 					{
 
@@ -1368,25 +1377,9 @@ class bin
 						}
 					}
 
-				if($type['html5']) {
-					$output = "<video id=\"html5player\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\" controls>
-						  <source src=\"{VIDEO}\" type=\"{VIDEO_TYPE}\">
-
-							{NO_HTML5}";
-					
-					
-
-					$output .= "</video>";
-						
-
-					$is = "html5";
-				}
-
 				if($is == NULL)
 					return false;
-
-						$vidType = FALSE;
-						
+					
 						switch ($is)
 							{
 								case "youtube":
@@ -1417,38 +1410,9 @@ class bin
 								case "flv":
 									$vidID = $url;
 								break;
-								case "html5":
-									$vidID = $url;
-									if($this->stristr_array($vidID, array('.ogv', '.ogg', '.ogm')))
-										$vidType = "video/ogg";
-									else
-										$vidType = "video/mp4";
-								break;
 							}
 		
 				$output = str_replace("{VIDEO}", $vidID, $output);
-				if($vidType) {
-					if($this->flowplayer() && $vidType == "video/mp4")
-						$noHtml5 = "<object id=\"flowplayer\" classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\">
-									<param name=\"movie\" value=\"" . $this->flowplayer() . "\" /> 
-									<param name=\"flashvars\" 
-										value='config={\"clip\":{\"autoPlay\":false,\"autoBuffering\":true,\"url\":\"{VIDEO}\"}}' />
-	
-
-									<!-- EMBED tag for Netscape Navigator 2.0+ and Mozilla compatible browsers -->
-									<embed type=\"application/x-shockwave-flash\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\" 
-										src=\"http://releases.flowplayer.org/swf/flowplayer-3.2.0.swf\"
-										flashvars='config={\"clip\":{\"autoPlay\":false,\"autoBuffering\":true,\"url\":\"{VIDEO}\"}}'/>
-	
-								</object>";
-					else
-						$noHtml5 = "<div class=\"spacer\">&nbsp;</div><div class=\"warn\">No suitible flash player present to play HTML5 video content, this video may not be visible on older browsers.</div>";
-					
-					$output = str_replace("{NO_HTML5}", $noHtml5, $output);
-					$output = str_replace("{VIDEO}", $vidID, $output);
-					$output = str_replace("{VIDEO_TYPE}", $vidType, $output);
-				}		
-
 				return $output;
 			}
 	}
@@ -1480,6 +1444,26 @@ $CONFIG['pb_pass'] = md5($CONFIG['pb_pass']);
 
 $db = new db($CONFIG);
 $bin = new bin($db);
+
+$ckey = $bin->cookieName();
+
+if(@$_POST['author'] && is_numeric($CONFIG['pb_author_cookie']))
+	setcookie($ckey, $bin->checkAuthor(@$_POST['author']), time() + $CONFIG['pb_author_cookie']);
+
+$CONFIG['_temp_pb_author'] = $_COOKIE[$ckey];
+
+switch($_COOKIE[$ckey])
+	{
+		case NULL:
+			$CONFIG['_temp_pb_author'] = $CONFIG['pb_author'];
+		break;
+		case $CONFIG['pb_author']:
+			$CONFIG['_temp_pb_author'] = $CONFIG['pb_author'];
+		break;
+		default:
+			$CONFIG['_temp_pb_author'] = $_COOKIE[$ckey];
+		break;
+	}
 
 if($bin->highlight())
 	{
@@ -1556,6 +1540,11 @@ if($requri == "defaults")
 		else
 			$defaults['video'] = 0;
 
+		if($bin->flowplayer())
+			$defaults['flv_video'] = 1;
+		else
+			$defaults['flv_video'] = 0;
+
 		if($CONFIG['pb_private'])
 			$defaults['privacy'] = 1;
 		else
@@ -1612,6 +1601,7 @@ if($requri == "defaults")
 					"syntax":		' . $defaults['syntax'] . ',
 					"line_highlight":	' . $defaults['highlight'] . ',
 					"video":		' . $defaults['video'] . ',
+					"flv_video":		' . $defaults['flv_video'] . ',
 					"url_format":		' . $defaults['ex_url'] . ',
 					"lifespan":		' . $defaults['lifespan'] . ',
 					"privacy":		' . $defaults['privacy'] . '
@@ -2025,18 +2015,9 @@ if($requri != "install")
 					<?php } ?>
 
 					pasteEnterH = $('#pasteEnter').height();
-
 					if(!$.browser.webkit)
 						$("textarea").resizehandle();
 
-					if($.browser.mozilla) {
-						if($('video#html5player').length) {
-							if($('#html5player > source').attr('src').search(/.mp4/i) != -1 || $('#html5player > source').attr('src').search(/.m4v/i) != -1) {
-								$('#flowplayer').clone().prependTo('#video');
-								$('video#html5player').remove();
-							}
-						}
-					}
 				});
 				
 				<?php if($CONFIG['pb_url']) { ?>
@@ -3060,7 +3041,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						echo "<div class=\"spacer\">&nbsp;</div>";
 
 						echo "<div id=\"authorContainerReply\"><label for=\"author\">Your Name</label><br />
-						<input type=\"text\" name=\"author\" id=\"authorEnter\" value=\"" . $CONFIG['pb_author'] . "\" onfocus=\"if(this.value=='" . $CONFIG['pb_author'] . "')this.value='';\" onblur=\"if(this.value=='')this.value='" . $CONFIG['pb_author'] . "';\" maxlength=\"32\" /></div>
+						<input type=\"text\" name=\"author\" id=\"authorEnter\" value=\"" . $CONFIG['_temp_pb_author'] . "\" onfocus=\"if(this.value=='" . $CONFIG['_temp_pb_author'] . "')this.value='';\" onblur=\"if(this.value=='')this.value='" . $CONFIG['_temp_pb_author'] . "';\" maxlength=\"32\" /></div>
 						<div class=\"spacer\">&nbsp;</div>
 						<input type=\"text\" name=\"email\" id=\"poison\" style=\"display: none;\" />
 						<input type=\"hidden\" name=\"ajax_token\" value=\"" . $bin->token(TRUE) . "\" />
@@ -3277,7 +3258,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				$bin->setTagline($CONFIG['pb_tagline'])
 				. "<div class=\"spacer\">&nbsp;</div>
 				<div id=\"formContainer\">
-				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (HTML5, YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for non-HTML5 browsers.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
+				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">
 						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]</span></label><br />
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\"></textarea></div>
@@ -3322,7 +3303,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						echo "<div class=\"spacer\">&nbsp;</div>";
 
 						echo "<div id=\"authorContainer\"><label for=\"author\">Your Name</label><br />
-						<input type=\"text\" name=\"author\" id=\"authorEnter\" value=\"" . $CONFIG['pb_author'] . "\" onfocus=\"if(this.value=='" . $CONFIG['pb_author'] . "')this.value='';\" onblur=\"if(this.value=='')this.value='" . $CONFIG['pb_author'] . "';\" maxlength=\"32\" /></div>
+						<input type=\"text\" name=\"author\" id=\"authorEnter\" value=\"" . $CONFIG['_temp_pb_author'] . "\" onfocus=\"if(this.value=='" . $CONFIG['_temp_pb_author'] . "')this.value='';\" onblur=\"if(this.value=='')this.value='" . $CONFIG['_temp_pb_author'] . "';\" maxlength=\"32\" /></div>
 						" . $uploadForm . "
 						<div class=\"spacer\">&nbsp;</div>
 						<input type=\"text\" name=\"email\" id=\"poison\" style=\"display: none;\" />

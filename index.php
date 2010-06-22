@@ -576,12 +576,12 @@ class db
 				return $output;
 			}
 
-		public function uglyHTML($input, $noBase64 = FALSE)
+		public function rawHTML($input)
 			{
-				if($noBase64)
-					$output = htmlspecialchars_decode($input);
-				else
-					$output = htmlspecialchars_decode(base64_decode($input));
+				if($this->dbt == "mysql")
+					$output = stripslashes($input);
+				else 
+					$output = stripslashes(stripslashes($input));
 
 				return $output;
 			}
@@ -1878,8 +1878,9 @@ if($requri != "install" && $requri != NULL && substr($requri, -1) != "!" && !$_P
 			{
 				if($db->dbt == "mysql")
 					$pasted = $pasted[0];
-
-				die("<pre>" . $db->dirtyHTML($bin->noHighlight($pasted['Data'])) . "</pre>");
+				
+				header("Content-Type: text/plain");
+				die($db->rawHTML($bin->noHighlight($pasted['Data'])));
 			}
 		else
 			die('There was an error!');

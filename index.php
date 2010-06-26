@@ -576,12 +576,12 @@ class db
 				return $output;
 			}
 
-		public function rawHTML($input)
+		public function uglyHTML($input, $noBase64 = FALSE)
 			{
-				if($this->dbt == "mysql")
-					$output = stripslashes($input);
-				else 
-					$output = stripslashes(stripslashes($input));
+				if($noBase64)
+					$output = htmlspecialchars_decode($input);
+				else
+					$output = htmlspecialchars_decode(base64_decode($input));
 
 				return $output;
 			}
@@ -787,7 +787,7 @@ class bin
 				if(!$config)
 					$output = "<!-- TAGLINE OMITTED -->";
 				else
-					$output = "<div id=\"tagline\">" . $config . "</div><div class=\"spacer\">&nbsp;</div>";
+					$output = "<div id=\"tagline\">" . $config . "</div>";
 
 				return $output;
 			}
@@ -1878,9 +1878,8 @@ if($requri != "install" && $requri != NULL && substr($requri, -1) != "!" && !$_P
 			{
 				if($db->dbt == "mysql")
 					$pasted = $pasted[0];
-				
-				header("Content-Type: text/plain");
-				die($db->rawHTML($bin->noHighlight($pasted['Data'])));
+
+				die("<pre>" . $db->dirtyHTML($bin->noHighlight($pasted['Data'])) . "</pre>");
 			}
 		else
 			die('There was an error!');
@@ -2174,15 +2173,16 @@ if($requri != "install")
       							data: dataString,
 							dataType: "json", 
       							success: function(msg) {
+								$('#result').attr('class', 'result');
 								if(msg.error != 0)
 									{
 										buttonElement.removeAttr('disabled');
 										buttonElement.attr('value', 'Submit your Paste');
-										$('#pastebin').prepend('<div class="spacer">&nbsp;</div><div class="error" id="' + msg.error + '">' + msg.message + '</div><div class="spacer">&nbsp;</div>');
+										$('#result').prepend('<div class="error" id="' + msg.error + '">' + msg.message + '</div>');
 									} else
 										{
 								buttonElement.attr('value', 'Submit your Paste');
-        							$('#pastebin').prepend('<div class="spacer">&nbsp;</div><div class="success">Your paste has been successfully recorded!</div><div class="confirmURL">URL to your paste is <a href="' + msg.url + '">' + msg.url + '</a></div><div class="spacer">&nbsp;</div>');
+        							$('#result').prepend('<div class="success">Your paste has been successfully recorded!</div><div class="confirmURL">URL to your paste is <a href="' + msg.url + '">' + msg.url + '</a></div>');
 										}
 
 								window.scrollTo(0,0); 
@@ -2190,7 +2190,7 @@ if($requri != "install")
 							error: function(msg) {
 								buttonElement.removeAttr('disabled');
 								buttonElement.attr('value', 'Submit your Paste');
-								$('#pastebin').prepend('<div class="spacer">&nbsp;</div><div class="error">Something went wrong</div><div class="confirmURL">' + msg + '</div><div class="spacer">&nbsp;</div>');
+								$('#result').prepend('<div class="error">Something went wrong</div><div class="confirmURL">' + msg + '</div>');
 								window.scrollTo(0,0);
 							} 
     						});
@@ -2211,6 +2211,7 @@ if($requri != "install")
 							.attr("target", strName);
 							iFrame.load(
 								function(objEvent){
+									$('#result').attr('class', 'result');
 									var objUploadBody = window.frames[ strName ].document.getElementsByTagName( "body" )[ 0 ];
 									var iBody = $( objUploadBody );
 									var objData = eval( "(" + iBody.html() + ")" );
@@ -2218,11 +2219,11 @@ if($requri != "install")
 										{
 											buttonElement.css({ display: "block" });
 											$('#dummyButton').remove();
-											$('#pastebin').prepend('<div class="spacer">&nbsp;</div><div class="error" id="' + objData.error + '">' + objData.message + '</div><div class="spacer">&nbsp;</div>');
+											$('#result').prepend('<div class="error" id="' + objData.error + '">' + objData.message + '</div><div class="spacer">&nbsp;</div>');
 										} else
 											{
 												buttonElement.attr('value', 'Submit your Paste');
-        											$('#pastebin').prepend('<div class="spacer">&nbsp;</div><div class="success">Your paste has been successfully recorded!</div><div class="confirmURL">URL to your paste is <a href="' + objData.url + '">' + objData.url + '</a></div><div class="spacer">&nbsp;</div>');
+        											$('#result').prepend('<div class="success">Your paste has been successfully recorded!</div><div class="confirmURL">URL to your paste is <a href="' + objData.url + '">' + objData.url + '</a></div>');
 											}
 									setTimeout(function(){ iFrame.remove(); }, 100);
 							});
@@ -2678,7 +2679,7 @@ if($requri != "install" && @$_POST['submit'])
 		$acceptTokens = $bin->token();
 
 		if(@$_POST['email'] != "" || !in_array($_POST['ajax_token'], $acceptTokens))
-			die("<div class=\"error\">Spambot detected, I don't like that!</div></div></body></html>");
+			die("<div class=\"result\"><div class=\"error\">Spambot detected, I don't like that!</div></div></div></body></html>");
 
 		$pasteID = $bin->generateID();
 
@@ -2772,9 +2773,9 @@ if($requri != "install" && @$_POST['submit'])
 		if(strlen(@$_POST['pasteEnter']) > 10 && $imageUpload && mb_strlen($paste['Content']) <= $CONFIG['pb_max_bytes'] && $db->insertPaste($paste['ID'], $paste))
 			{ 
 				if($bin->_clipboard())
-					die("<div class=\"success\">Your paste has been successfully recorded!</div><div class=\"confirmURL\">URL to your paste is <a href=\"" . $bin->linker($paste['ID']) . $exclam . "\">" . $bin->linker($paste['ID']) . "</a> &nbsp; <span class=\"copyText\" id=\"_copyURL\">Copy URL</span><span id=\"_copyText\" style=\"visibility: hidden;\">&nbsp;</span></div><form id=\"pasteForm\" name=\"pasteForm\" action=\"" . $bin->linker($pasted['ID']) . "\" method=\"post\"><input type=\"hidden\" name=\"originalPaste\" id=\"originalPaste\" value=\"" . $bin->linker($paste['ID']) . "\" /><input type=\"hidden\" name=\"thisURI\" id=\"thisURI\" value=\"" . $bin->linker($paste['ID']) . "\" /></form><div class=\"spacer\">&nbsp;</div><div class=\"spacer\"><span id=\"_clipboard_replace\">YOU NEED FLASH!</span> &nbsp; <span id=\"_clipboardURI_replace\">YOU NEED FLASH!</span></div></div></body></html>");
+					die("<div class=\"result\"><div class=\"success\">Your paste has been successfully recorded!</div><div class=\"confirmURL\">URL to your paste is <a href=\"" . $bin->linker($paste['ID']) . $exclam . "\">" . $bin->linker($paste['ID']) . "</a> &nbsp; <span class=\"copyText\" id=\"_copyURL\">Copy URL</span><span id=\"_copyText\" style=\"visibility: hidden;\">&nbsp;</span></div></div><form id=\"pasteForm\" name=\"pasteForm\" action=\"" . $bin->linker($pasted['ID']) . "\" method=\"post\"><input type=\"hidden\" name=\"originalPaste\" id=\"originalPaste\" value=\"" . $bin->linker($paste['ID']) . "\" /><input type=\"hidden\" name=\"thisURI\" id=\"thisURI\" value=\"" . $bin->linker($paste['ID']) . "\" /></form><div class=\"spacer\">&nbsp;</div><div class=\"spacer\"><span id=\"_clipboard_replace\">YOU NEED FLASH!</span> &nbsp; <span id=\"_clipboardURI_replace\">YOU NEED FLASH!</span></div></div></body></html>");
 				else
-					die("<div class=\"success\">Your paste has been successfully recorded!</div><div class=\"confirmURL\">URL to your paste is <a href=\"" . $bin->linker($paste['ID']) . $exclam . "\">" . $bin->linker($paste['ID']) . "</a></div></div></body></html>"); }
+					die("<div class=\"result\"><div class=\"success\">Your paste has been successfully recorded!</div><div class=\"confirmURL\">URL to your paste is <a href=\"" . $bin->linker($paste['ID']) . $exclam . "\">" . $bin->linker($paste['ID']) . "</a></div></div></div></body></html>"); }
 		else {
 			echo "<div class=\"error\">Hmm, something went wrong.</div>";
 			if(strlen(@$_FILES['pasteImage']['name']) > 4 && $_SERVER['CONTENT_LENGTH'] > $CONFIG['pb_image_maxsize'] && $CONFIG['pb_images'])
@@ -2832,7 +2833,7 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 					echo "&nbsp;";
 			if($requri)
 				{
-					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><div class=\"spacer\">&nbsp;</div><h2>Administrate</h2>";
+					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
 					echo "<div id=\"adminFunctions\">
 							<form id=\"adminForm\" action=\"" . $bin->linker($requri) . "\" method=\"post\">
 								<label for=\"adminPass\">Password</label><br />
@@ -2853,7 +2854,7 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 				{
 					echo "<div id=\"recentPosts\" class=\"recentPosts\">";
 					echo "<h2><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
-					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><div class=\"spacer\">&nbsp;</div><h2>Administrate</h2>";
+					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
 					echo "<div id=\"adminFunctions\">
 							<form id=\"adminForm\" action=\"" . $bin->linker($requri) . "\" method=\"post\">
 								<label for=\"adminPass\">Password</label><br />
@@ -2876,8 +2877,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 		echo "<div id=\"pastebin\" class=\"pastebin\">"
 			. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
 			$bin->setTagline($CONFIG['pb_tagline'])
-			. "<div id=\"pasteID\"><strong>PasteID</strong>: " . $requri . "</div>
-			<div class=\"spacer\">&nbsp;</div>";
+			. "<div id=\"result\">&nbsp;</div>";
 
 		if($pasted = $db->readPaste($requri))
 			{
@@ -2916,9 +2916,9 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						$lifeString = "in " . $bin->event(time() - ($pasted['Lifespan'] - time()));
 
 				if(gmdate('U') > $pasted['Lifespan'])
-					{ $db->dropPaste($requri); die("<div class=\"warn\">This paste has either expired or doesn't exist!</div></div></body></html>"); }
+					{ $db->dropPaste($requri); die("<div class=\"result\"><div class=\"warn\">This paste has either expired or doesn't exist!</div></div></div></body></html>"); }
 
-				echo "<div id=\"aboutPaste\"><strong>Pasted by</strong> " . stripslashes($pasted['Author']) . ", <em title=\"" . $bin->event($pasted['Datetime']) . " ago\">" . gmdate($CONFIG['pb_datetime'], $pasted['Datetime']) . " GMT</em><br />
+				echo "<div id=\"aboutPaste\"><div id=\"pasteID\"><strong>PasteID</strong>: " . $requri . "</div><strong>Pasted by</strong> " . stripslashes($pasted['Author']) . ", <em title=\"" . $bin->event($pasted['Datetime']) . " ago\">" . gmdate($CONFIG['pb_datetime'], $pasted['Datetime']) . " GMT</em><br />
 					<strong>Expires</strong> " . $lifeString . "<br />
 					<strong>Paste size</strong> " . $pasteSize . "</div>";
 
@@ -2940,11 +2940,10 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 					echo "<div id=\"styleBar\"><strong>Toggle</strong> <a href=\"#\" onclick=\"return toggleExpand();\">Expand</a> &nbsp;  <a href=\"#\" onclick=\"return toggleWrap();\">Wrap</a> &nbsp; <a href=\"" . $bin->linker($pasted['ID'] . '@raw') . "\">Raw</a></div>";
 
 				if($bin->_clipboard())
-					{ echo "<div class=\"spacer\">&nbsp;</div>";
-					echo "<div class=\"_clipboardBar\"><span class=\"copyText\" id=\"_copyText\">Copy Contents</span> &nbsp; <span class=\"copyText\" id=\"_copyURL\">Copy URL</span></div>"; }
-				else {
-						echo "<div class=\"spacer\">&nbsp;</div><div class=\"spacer\">&nbsp;</div>";
-					}
+					echo "<div class=\"_clipboardBar\"><span class=\"copyText\" id=\"_copyText\">Copy Contents</span> &nbsp; <span class=\"copyText\" id=\"_copyURL\">Copy URL</span></div>";
+				else 
+					echo "<div class=\"spacer\">&nbsp;</div>";
+
 				
 				if(!$bin->highlight() || (!is_bool($pasted['Image']) && !is_numeric($pasted['Image'])) || ($pasted['Video'] && $CONFIG['pb_video']) || $pasted['Syntax'] == "plaintext")
 					{
@@ -3068,18 +3067,18 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 			}
 			else
 				{
-					echo "<div class=\"warn\">This paste has either expired or doesn't exist!</div>";
+					echo "<div class=\"result\"><div class=\"warn\">This paste has either expired or doesn't exist!</div></div>";
 					$requri = NULL;
 				}
 		echo "</div>";
 	} elseif($requri && $requri != "install" && substr($requri, -1) == "!")
 		{
 			if(!$bin->checkIfRedir(substr($requri, 0, -1)))
-				echo "<h1>Just a sec!</h1><div class=\"warn\">You are about to visit a post that the author has marked as requiring confirmation to view.</div>
-				<div class=\"infoMessage\">If you wish to view the content <strong><a href=\"" . $bin->linker(substr($requri, 0, -1)) . "\">click here</a></strong>. Please note that the owner of this pastebin will not be held responsible for the content of this paste.<br /><br /><a href=\"" . $bin->linker() . "\">Take me back...</a></div>";
+				echo "<div class=\"result\"><h1>Just a sec!</h1><div class=\"warn\">You are about to visit a post that the author has marked as requiring confirmation to view.</div>
+				<div class=\"infoMessage\">If you wish to view the content <strong><a href=\"" . $bin->linker(substr($requri, 0, -1)) . "\">click here</a></strong>. Please note that the owner of this pastebin will not be held responsible for the content of this paste.<br /><br /><a href=\"" . $bin->linker() . "\">Take me back...</a></div></div>";
 			else
-				echo "<h1>Warning!</h1><div class=\"error\">You are about to leave the site!</div>
-				<div class=\"infoMessage\">This paste redirects you to<br /><br /><div id=\"emphasizedURL\">" . $bin->checkIfRedir(substr($requri, 0, -1)) . "</div><br /><br />Danger lurks on the world wide web, if you want to visit the site <strong><a href=\"" . $bin->checkIfRedir(substr($requri, 0, -1)) . "\">click here</a></strong>. Please note that the owner of this pastebin will not be held responsible for the content of the site.<br /><br /><a href=\"" . $bin->linker() . "\">Take me back...</a></div>";
+				echo "<div class=\"result\"><h1>Warning!</h1><div class=\"error\">You are about to leave the site!</div>
+				<div class=\"infoMessage\">This paste redirects you to<br /><br /><div id=\"emphasizedURL\">" . $bin->checkIfRedir(substr($requri, 0, -1)) . "</div><br /><br />Danger lurks on the world wide web, if you want to visit the site <strong><a href=\"" . $bin->checkIfRedir(substr($requri, 0, -1)) . "\">click here</a></strong>. Please note that the owner of this pastebin will not be held responsible for the content of the site.<br /><br /><a href=\"" . $bin->linker() . "\">Take me back...</a></div></div>";
 
 			echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><div class=\"spacer\">&nbsp;</div><h2>Administrate</h2>";
 					echo "<div id=\"adminFunctions\">
@@ -3257,7 +3256,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				echo "<div id=\"pastebin\" class=\"pastebin\">"
 				. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
 				$bin->setTagline($CONFIG['pb_tagline'])
-				. "<div class=\"spacer\">&nbsp;</div>
+				. "<div id=\"result\">&nbsp;</div>
 				<div id=\"formContainer\">
 				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">

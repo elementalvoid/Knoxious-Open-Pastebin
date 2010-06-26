@@ -216,29 +216,6 @@ $CONFIG['pb_private'] = FALSE;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* Start Pastebin */
 if(substr(phpversion(), 0, 3) < 5.2)
 	die('PHP 5.2 is required to run this pastebin! This version is ' . phpversion() . '. Please contact your host!');
@@ -2226,6 +2203,7 @@ if($requri != "install")
         											$('#result').prepend('<div class="success">Your paste has been successfully recorded!</div><div class="confirmURL">URL to your paste is <a href="' + objData.url + '">' + objData.url + '</a></div>');
 											}
 									setTimeout(function(){ iFrame.remove(); }, 100);
+									window.scrollTo(0,0);
 							});
 						}
 				}
@@ -2484,7 +2462,7 @@ function submitPaste(targetButton) {
 	disabledButton.setAttribute('value', 'Posting...');
 	disabledButton.setAttribute('type', 'button');
 	disabledButton.setAttribute('disabled', 'disabled');
-	disabledButton.setAttribute('id', 'dummyPost');
+	disabledButton.setAttribute('id', 'dummyButton');
 	targetButton.style.display = "none";
 	parentContainer.appendChild(disabledButton);
 	return true;
@@ -2647,7 +2625,7 @@ function submitPaste(targetButton) {
 	disabledButton.setAttribute('value', 'Posting...');
 	disabledButton.setAttribute('type', 'button');
 	disabledButton.setAttribute('disabled', 'disabled');
-	disabledButton.setAttribute('id', 'dummyPost');
+	disabledButton.setAttribute('id', 'dummyButton');
 	targetButton.style.display = "none";
 	parentContainer.appendChild(disabledButton);
 	return true;
@@ -2782,7 +2760,7 @@ if($requri != "install" && @$_POST['submit'])
 				echo "<div class=\"warn\">Is the file too big?</div>";
 			elseif(strlen(@$_FILES['pasteImage']['name']) > 4 && $CONFIG['pb_images'])
 				echo "<div class=\"warn\">File is the wrong extension?</div>";
-			elseif(!$CONFIG['pb_images'])
+			elseif(!$CONFIG['pb_images'] && strlen(@$_FILES['pasteImage']['name']) > 4)
 				echo "<div class=\"warn\">Nope, we don't host images!</div>";
 			else
 				echo "<!-- Don't think it was the file upload... -->";
@@ -3324,7 +3302,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 	<div id="copyrightInfo">Written by <a href="http://knoxious.co.uk/">Knoxious.co.uk</a>, 2010.</div>
 	</div>
 <?php if($bin->_clipboard() && $requri && $requri != "install")
-	echo "<div><span id=\"_clipboard_replace\">YOU NEED FLASH!</span> &nbsp; <span id=\"_clipboardURI_replace\">YOU NEED FLASH!</span></div>";
+	echo "<div><span id=\"_clipboard_replace\">YOU NEED FLASH!</span> &nbsp; <span id=\"_clipboardURI_replace\">&nbsp;</span></div>";
 
 if(($requri && $requri != "install") && (!is_bool($pasted['Image']) && !is_numeric($pasted['Image'])) || ($pasted['Video'] && $CONFIG['pb_video']) && !$bin->jQuery())
 	echo "<script type=\"text/javascript\">setTimeout(\"toggleWrap()\", 1000); setTimeout(\"toggleStyle()\", 1000);</script>";

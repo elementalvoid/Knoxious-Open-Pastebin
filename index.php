@@ -84,6 +84,11 @@ $CONFIG['pb_gzip'] = FALSE;
 $CONFIG['pb_api'] = FALSE;
 # $CONFIG['pb_api'] = TRUE;
 
+// Starting ID length, when IDs have run out the script will automatically increment this
+// Number. Default is 1;
+$CONFIG['pb_id_length'] = 1;
+# $CONFIG['pb_id_length'] = 5;
+
 // Server side API Adaptor?
 // This allows Javascript frameworks like jQuery to perform cross-domain AJAX.
 // Example code: http://knoxious.co.uk/Sharpshooter
@@ -707,23 +712,28 @@ class db
 
 		public function getLastID()
 			{
+				if(!is_int($this->config['pb_id_length']))
+					$this->config['pb_id_length'] = 1;
+				if($this->config['pb_id_length'] > 32)
+					$this->config['pb_id_length'] = 32;
+
 				switch($this->dbt)
 					{
 						case "mysql":
 							$this->connect();							
 							$query = "SELECT * FROM " . $this->config['mysql_connection_config']['db_table'] . " ORDER BY Datetime DESC LIMIT 1";
 							$result = mysql_query($query);
-							$output = 1;
+							$output = $this->config['pb_id_length'];
 							while($assoc = mysql_fetch_assoc($result))
 								{
 									if(strlen($assoc['ID']) >= 1)
 										$output = strlen($assoc['ID']);
 									else
-										$output = 1;
+										$output = $this->config['pb_id_length'];
 								}
 
 							if($output < 1)
-								$output = 1;
+								$output = $this->config['pb_id_length'];
 
 						break;
 						case "txt":
@@ -731,7 +741,7 @@ class db
 							$index = array_reverse($index);
 							$output = strlen(str_replace("!", NULL, $index[0]));
 							if($output < 1)
-								$output = 1;
+								$output = $this->config['pb_id_length'];
 						break;
 					}
 

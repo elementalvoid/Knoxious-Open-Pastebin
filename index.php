@@ -2,7 +2,7 @@
 
 /*
  *	Knoxious Open Pastebin		 v 1.0
- * ===================================================================================
+ * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk)
  *
@@ -10,7 +10,9 @@
  * 	See the GPL for details (http://www.gnu.org/licenses/gpl.html).
  *
  *
- *	A quick to set up, rapid install, one-file pastebin! (or at least can be)
+ *	A quick to set up, rapid install, one-file pastebin! 
+ *	(or at least can be)
+ *
  *	Supports text and image hosting, url and video linking.
  *
  *	URL: 	http://o-pb.eu

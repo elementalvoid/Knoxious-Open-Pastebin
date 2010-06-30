@@ -1,40 +1,39 @@
-/*
- *	Knoxious Open Pastebin		 v 1.0
- * ===================================================================================
- *	
- *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk)
+
+/* Knoxious Open Pastebin           v 1.0
+ * ============================================================================
+ *      
+ *      Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk)
  *
- * 	Released under the terms of the GNU Public License.
- * 	See the GPL for details (http://www.gnu.org/licenses/gpl.html).
+ *      Released under the terms of the GNU Public License.
+ *      See the GPL for details (http://www.gnu.org/licenses/gpl.html).
  *
  *
- *	A quick to set up, rapid install, one-file pastebin! (or at least can be)
- *	Supports text and image hosting, url and video linking.
+ *      A quick to set up, rapid install, one-file pastebin! 
+ *      (or at least can be)
  *
- *	URL: 	http://o-pb.eu
+ *      Supports text and image hosting, url and video linking.
+ *
+ *      URL:    http://o-pb.eu
  *
  */
 
 
 
-
-
-
-
 AUTHORS
---------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
-	+	Xan Manning			(xan[dot]manning[at]gmail[dot]com)
+	+	Xan Manning		(xan[dot]manning[at]gmail[dot]com)
 
 
 
 
 
 INSTALLATION
---------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 	1.	Change the $CONFIG variables in index.php
-	2.	Download any of the required 'wares (eg, GeSHi, _clipboard.swf, jQuery, etc.)
+	2.	Download any of the required 'wares (eg, GeSHi, _clipboard.swf,
+		jQuery, etc.)
 	3.	Upload to your server
 	4.	CHMOD the containing folder to 0777.
 	5.	Visit http://yoursite/path/to/pastebin/index.php
@@ -45,7 +44,7 @@ INSTALLATION
 
 
 COPYING
---------------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
                     GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007

@@ -67,6 +67,18 @@ $CONFIG['pb_tagline'] = FALSE;
 // Pastebin Admin Password, strong one is mucho recommended!
 $CONFIG['pb_pass'] = "password";
 
+// Pastebin Salts, 4 sequences of random letters and numbers!
+// Please make them at least 6 characters or more!
+$CONFIG['pb_salts'] = array(	1 => "str001",
+				2 => "str002",
+				3 => "str003",
+				4 => "str004");
+
+// Hashing algorithm, NULL or FALSE for MD5 (Default)
+// For a full list, consult the function hash_algos();
+$CONFIG['pb_algo'] = NULL;
+# $CONFIG['pb_algo'] = "sha256";
+
 // Apache/IIS Rewrite enabled? Needs to be like 
 // http://yourdomain.com/id forwards to http://yourdomain.com/index.php?i=id or
 // http://yourdomain.com/dir/id forwards to http://yourdomain.com/dir/index.php?i=id
@@ -1199,6 +1211,30 @@ class bin
 				return $output;
 			}
 
+		public function hasher($string, $salts = NULL)
+			{
+				if(!is_array($salts))
+					$salts = NULL;
+
+				if(count($salts) < 2)
+					$salts = NULL;
+
+				if(!$this->db->config['pb_algo'])
+					$this->db->config['pb_algo'] = "md5";
+
+				$hashedSalt = NULL;
+
+				if($salts)
+					$hashedSalt = array(sha1($salts[1] . $salts[3]), sha1($salts[2] . $salts[4]));
+
+				if(is_array($hashedSalt))
+					$output = hash($this->db->config['pb_algo'], $hashedSalt[0] . $string . $hashedSalt[1]);
+				else
+					$output = hash($this->db->config['pb_algo'], $string);
+
+				return $output;
+			}
+
 		public function event($time, $single = FALSE)
 			{
 				$context = array(
@@ -1428,10 +1464,12 @@ if(strstr($requri, "@"))
 		$reqhash = $tempRequri[1];
 	}
 
-$CONFIG['pb_pass'] = md5($CONFIG['pb_pass']);
-
 $db = new db($CONFIG);
 $bin = new bin($db);
+
+$CONFIG['pb_pass'] = $bin->hasher($CONFIG['pb_pass'], $CONFIG['pb_salts']);
+$db->config['pb_pass'] = $CONFIG['pb_pass'];
+$bin->db->config['pb_pass'] = $CONFIG['pb_pass'];
 
 $ckey = $bin->cookieName();
 
@@ -2661,7 +2699,7 @@ elseif($requri != "install" && $db->connect())
 else
 	echo "<!-- No Check is required... -->";
 
-if(@$_POST['adminAction'] == "delete" && md5(@$_POST['adminPass']) === $CONFIG['pb_pass'])
+if(@$_POST['adminAction'] == "delete" && $bin->hasher(@$_POST['adminPass'], $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
 	{ $db->dropPaste($requri); echo "<div class=\"success\">Paste, " . $requri . ", has been deleted!</div>"; $requri = NULL; }
 
 if($requri != "install" && @$_POST['submit'])
@@ -2912,7 +2950,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 					<strong>Expires</strong> " . $lifeString . "<br />
 					<strong>Paste size</strong> " . $pasteSize . "</div>";
 
-				if(@$_POST['adminAction'] == "ip" && md5(@$_POST['adminPass']) === $CONFIG['pb_pass'])
+				if(@$_POST['adminAction'] == "ip" && $bin->hasher(@$_POST['adminPass'], $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
 					echo "<div class=\"success\"><strong>Author IP Address</strong> <a href=\"http://whois.domaintools.com/" . base64_decode($pasted['IP']) . "\">" . base64_decode($pasted['IP']) . "</a></div>";
 
 				if(!is_bool($pasted['Image']) && !is_numeric($pasted['Image']))
@@ -3106,13 +3144,24 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				{ echo "<li>Quick password check. ";
 					$passLen = array(8, 9, 10, 11, 12);
 					shuffle($passLen);
-					if(strtolower($CONFIG['pb_pass']) === md5("password") || !isset($CONFIG['pb_pass']))
+					if(strtolower($CONFIG['pb_pass']) === $bin->hasher("password", $CONFIG['pb_salts']) || !isset($CONFIG['pb_pass']))
 						echo "<span class=\"error\">Password is still default!</span> &nbsp; &raquo; &nbsp; Suggested password: <em>" . $bin->generateRandomString($passLen[0]) . "</em>";
 					else
 						{ echo "<span class=\"success\">Password is not default!</span>"; $stage[] = 1; }
 				echo "</li>"; }
 
 				if(count($stage) > 1)
+				{ echo "<li>Quick Salt Check. ";
+					$no_salts = count($CONFIG['pb_salts']);
+					$saltLen = array(8, 9, 10, 11, 12, 14, 16, 25, 32);
+					shuffle($saltLen);
+					if($no_salts < 4 || ($CONFIG['pb_salts'][1] == "str001" || $CONFIG['pb_salts'][2] == "str002" || $CONFIG['pb_salts'][3] == "str003" || $CONFIG['pb_salts'][4] == "str004"))
+						echo "<span class=\"error\">Salt strings are inadequate!</span> &nbsp; &raquo; &nbsp; Suggested salts: <ol><li>" . $bin->generateRandomString($saltLen[0]) . "</li><li>" . $bin->generateRandomString($saltLen[1]) . "</li><li>" . $bin->generateRandomString($saltLen[2]) . "</li><li>" . $bin->generateRandomString($saltLen[3]) . "</li></ol>";
+					else
+						{ echo "<span class=\"success\">Salt strings are adequate!</span>"; $stage[] = 1; }
+				echo "</li>"; }
+
+				if(count($stage) > 2)
 				{ echo "<li>Checking Database Connection. ";
 					if($db->dbt == "txt")
 						{ if(!is_dir($CONFIG['txt_config']['db_folder'])) { mkdir($CONFIG['txt_config']['db_folder']); mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], 0777); chmod($CONFIG['txt_config']['db_folder'], 0777); } $db->write($db->serializer(array()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index']); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); chmod ($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'], 0666); chmod($CONFIG['txt_config']['db_folder'] . "/index.html", 0666); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", 0666);	}
@@ -3122,7 +3171,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						{ echo "<span class=\"success\">Connected to database!</span>"; $stage[] = 1; }
 				echo "</li>"; }
 
-				if(count($stage) > 2)
+				if(count($stage) > 3)
 				{ echo "<li>Creating Database Tables. ";
 					$structure = "CREATE TABLE IF NOT EXISTS " . $CONFIG['mysql_connection_config']['db_table'] . " (ID longtext, Datetime bigint, Author varchar(255), Protection int, Syntax varchar(255) DEFAULT 'plaintext', Parent longtext, Image longtext, ImageTxt longtext, URL longtext, Video longtext, Lifespan int, IP varchar(225), Data longtext, GeSHI longtext, Style longtext, PRIMARY KEY (Datetime))";
 				if($db->dbt == "mysql")
@@ -3151,7 +3200,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 							echo "<span class=\"success\">Table created!</span>"; $stage[] = 1;
 						}
 				echo "</li>"; }
-				if(count($stage) > 3)
+				if(count($stage) > 4)
 				{ echo "<li>Locking Installation. ";					
 					if(!$db->write(time(), './INSTALL_LOCK'))
 						echo "<span class=\"error\">Writing Error</span>";
@@ -3159,7 +3208,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						{ echo "<span class=\"success\">Complete</span>"; $stage[] = 1; chmod('./INSTALL_LOCK', 0666); }
 				echo "</li>"; }
 			echo "</ul>";
-				if(count($stage) > 4)
+				if(count($stage) > 5)
 				{ echo "<div id=\"confirmInstalled\"><a href=\"" . $bin->linker() . "\">Continue</a> to your new installation!<br /></div>";
 				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to 0755.</div>"; }
 			echo "</div>";

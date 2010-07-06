@@ -69,7 +69,6 @@ $CONFIG['pb_pass'] = "password";
 
 // Pastebin Salts, 4 sequences of random letters and numbers!
 // Please make them at least 6 characters or more!
-// Set number to something between 1 and 128
 $CONFIG['pb_salts'] = array(	1 => "str001",
 				2 => "str002",
 				3 => "str003",

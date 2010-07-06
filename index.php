@@ -65,7 +65,7 @@ $CONFIG['pb_name'] = FALSE;
 $CONFIG['pb_tagline'] = FALSE;
 
 // Pastebin Admin Password, strong one is mucho recommended!
-$CONFIG['pb_pass'] = "password";s
+$CONFIG['pb_pass'] = "password";
 
 // Pastebin Salts, 4 sequences of random letters and numbers!
 // Please make them at least 6 characters or more!

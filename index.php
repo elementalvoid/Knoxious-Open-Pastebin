@@ -65,10 +65,11 @@ $CONFIG['pb_name'] = FALSE;
 $CONFIG['pb_tagline'] = FALSE;
 
 // Pastebin Admin Password, strong one is mucho recommended!
-$CONFIG['pb_pass'] = "password";
+$CONFIG['pb_pass'] = "password";s
 
 // Pastebin Salts, 4 sequences of random letters and numbers!
 // Please make them at least 6 characters or more!
+// Set number to something between 1 and 128
 $CONFIG['pb_salts'] = array(	1 => "str001",
 				2 => "str002",
 				3 => "str003",
@@ -181,6 +182,7 @@ $CONFIG['pb_image_maxsize'] = 2097152;
 
 // Enable Video embedding? (TRUE or FALSE)
 $CONFIG['pb_video'] = FALSE;
+
 // Enable FlowPlayer for playing .flv files? (Path or FALSE) Can be a URL.
 // http://flowplayer.org
 $CONFIG['pb_flowplayer'] = FALSE;
@@ -1225,7 +1227,19 @@ class bin
 				$hashedSalt = NULL;
 
 				if($salts)
-					$hashedSalt = array(sha1($salts[1] . $salts[3]), sha1($salts[2] . $salts[4]));
+					{
+						$hashedSalt = array(NULL, NULL);
+						$longIP = ip2long($_SERVER['REMOTE_ADDR']);
+
+						for($i = 0; $i < strlen(max($salts)) ; $i++)
+							{
+								$hashedSalt[0] .= $salts[1][$i] . $salts[3][$i] . ($longIP * $i);
+								$hashedSalt[1] .= $salts[2][$i] . $salts[4][$i] . ($longIP + $i);
+							}
+
+						$hashedSalt[0] = hash($this->db->config['pb_algo'], $hashedSalt[0]);
+						$hashedSalt[1] = hash($this->db->config['pb_algo'], $hashedSalt[1]);
+					}
 
 				if(is_array($hashedSalt))
 					$output = hash($this->db->config['pb_algo'], $hashedSalt[0] . $string . $hashedSalt[1]);
@@ -1233,6 +1247,7 @@ class bin
 					$output = hash($this->db->config['pb_algo'], $string);
 
 				return $output;
+
 			}
 
 		public function event($time, $single = FALSE)

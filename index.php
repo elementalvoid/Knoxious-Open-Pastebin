@@ -6,8 +6,8 @@
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk)
  *
- * 	Released under the terms of the GNU Public License.
- * 	See the GPL for details (http://www.gnu.org/licenses/gpl.html).
+ * 	Released under the terms of the MIT License.
+ * 	See the MIT for details (http://opensource.org/licenses/mit-license.php).
  *
  *
  *	A quick to set up, rapid install, one-file pastebin! 
@@ -15,7 +15,7 @@
  *
  *	Supports text and image hosting, url and video linking.
  *
- *	URL: 	http://o-pb.eu
+ *	URL: 	http://knoxious.co.uk
  *
  */
 

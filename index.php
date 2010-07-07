@@ -4,7 +4,7 @@
  *	Knoxious Open Pastebin		 v 1.0
  * ============================================================================
  *	
- *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk)
+ *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
  *
  * 	Released under the terms of the MIT License.
  * 	See the MIT for details (http://opensource.org/licenses/mit-license.php).
@@ -15,7 +15,8 @@
  *
  *	Supports text and image hosting, url and video linking.
  *
- *	URL: 	http://knoxious.co.uk
+ *	URL: 		http://knoxious.co.uk/
+ *	EXAMPLE: 	http://pzt.me/
  *
  */
 

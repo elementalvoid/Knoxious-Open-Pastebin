@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.0
+ *	Knoxious Open Pastebin		 v 1.0.2
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -1949,7 +1949,7 @@ if($requri != "install")
 
 		<?php
 			if($bin->styleSheet())
-				echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"" . $CONFIG['pb_style'] . "\" media=\"screen\" />";
+				echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"" . $CONFIG['pb_style'] . "\" media=\"screen, print\" />";
 			else {
 		?>
 		<style type="text/css">
@@ -2013,6 +2013,19 @@ if($requri != "install")
 			#_copyText { visibility: hidden; }
 			#_copyURL { visibility: hidden; }
 			#video { text-align: center; }
+
+			@media print {
+				pre { white-space: pre-wrap; }
+				#recentPosts { display: none; }
+				#copyrightInfo { position: relative; top: 0px; right: 0px; width: 98%; padding: 1%; text-align: right; }
+				#retrievedPaste { border: none; }
+				#lineNumbers { max-height: none; width: auto; }
+				#pasteBin { width: 98%; }
+				#formContainer { display: none; }
+				#styleBar { display: none; } 
+				._clipboardBar { display: none; }
+				.spacer { display: none; }
+			}
 		</style>
 		<?php
 			}

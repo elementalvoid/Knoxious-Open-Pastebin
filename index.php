@@ -1953,78 +1953,85 @@ if($requri != "install")
 			else {
 		?>
 		<style type="text/css">
-			body { background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
-			h2 { font-size: 15px; }
-			a { color: #336699; }
-			img { border: none; }
-			pre { display: inline; font-family: inherit; } 
-			.success { background-color: #AAFFAA; border: 1px solid #00CC00; font-weight: bolder; text-align: center; padding: 2px; color: #000000; margin-top: 3px; margin-bottom: 3px; }
-			.warn { background-color: #FFFFAA; border: 1px solid #CCCC00; font-weight: bolder; text-align: center; padding: 2px; color: #000000; margin-top: 3px; margin-bottom: 3px; }
-			.error { background-color: #FFAAAA; border: 1px solid #CC0000; font-weight: bolder; text-align: center; padding: 2px; color: #000000; margin-top: 3px; margin-bottom: 3px; }
-			.confirmURL { border-bottom: 1px solid #CCCCCC;  text-align: center; font-size: medium; }
-			.alternate { background-color: #F3F3F3; }
-			.copyText { color: #336699; text-decoration: underline; cursor: pointer; cursor: hand; }
-			._clipboardBar { text-align: right; }
-			.plainText { font-family: Arial, Helvetica, sans-serif; border: none; list-style-type: none; margin-bottom: 25px; }
-			.monoText { font-family:"Courier New",Courier,mono; list-style-type: decimal; }
-			.pastedImage { max-width: 500px; height : auto; }
-			.pastedImage { width: auto; max-height : 500px; }
-			.infoMessage { padding: 25px; font-size: medium; max-width: 800px; }
-			.lineHighlight { background-color: #FFFFAA; font-weight: bolder; color: #000000; }
-			.resizehandle {	background: #F0F0F0 scroll 45%; cursor: s-resize; text-align: center; color: #AAAAAA; height: 16px; width: 100%; } 
-			#newPaste { text-align: center; border-bottom: 1px dotted #CCCCCC; padding-bottom: 10px; }
-			#lineNumbers { width: 100%; max-height: 500px; background-color: #FFFFFF; overflow: auto; padding: 0; margin: 0; }
-			div#siteWrapper { width: 100%; margin: 0 auto; }
-			div#siteWrapper > #showAdminFunctions { max-width: 800px; margin: 25px; }
-			div#siteWrapper > #hiddenAdmin { max-width: 800px; margin: 25px; }
-			div#recentPosts { width: 15%; font-size: xx-small; float: left; position: relative; margin-left: 1%; }
-			div#pastebin { width: 82%; float: left; position: relative; padding-left: 1%; border-left: 1px dotted #CCCCCC; }
-			#pasteEnter { width: 100%; height: 250px; border: 1px solid #CCCCCC; background-color: #FFFFFF; }
-			#authorEnter { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; width: 68%;  }
-			#adminPass { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; width: 100%;  }
-			#copyrightInfo { color: #999999; font-size: xx-small; position: fixed; bottom: 0px; right: 10px; padding-bottom: 10px; text-align: left; }
-			ul#postList { padding: 0; margin-left: 0; list-style-type: none; margin-bottom: 50px; }
-			#adminAction { width: 100%; }
-			#urlField { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; height: 20px; width: 100%; }
-			#emphasizedURL	{ font-size: x-large; width: 100%; overflow: auto; font-style: italic; padding: 5px; }
-			#showAdminFunctions { font-size: xx-small; font-weight: bold; text-align: center; }
-			#hiddenAdmin { display: none; padding-right: 10px; }
-			#instructions { display: none; }
-			#serviceList li { margin-top: 7px; margin-bottom: 7px; list-style: square; }
-			#authorContainer { width: 48%; float: left; margin-bottom: 10px;  }
-			#authorContainerReply { padding-right: 52%; margin-bottom: 10px;  }
-			#submitContainer { width: 100%; display: block; }
-			#highlightContainer { margin-bottom: 5px; }
-			#lifespanContainer { margin-bottom: 5px; }
-			#privacyContainer { margin-bottom: 5px; }
-			#highlightContainer > select { width: 33%; background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; }
-			#lifespanContainer > select { width: 33%; background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; }
-			#privacyContainer > select { width: 33%; background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; }
-			#pasteImage { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; padding: 2px; }
-			#highlightContainer > label { width: 200px; display: block; }
-			#lifespanContainer > label { width: 200px; display: block; }
-			#privacyContainer > label { width: 200px; display: block; }
-			#fileUploadContainer { width: 48%; float: left; margin-bottom: 10px; }
-			#imageContainer { text-align: center; padding: 10px; }
-			#styleBar { text-align: left; position: relative; float: left; width: 48%; }
-			#retrievedPaste { width: 100%; position: relative; padding: 0; margin: 0; margin-top: 10px; margin-bottom: 10px; border: 1px solid #CCCCCC; }
-			#_clipboard_replace { visibility: hidden; }
-			#_clipboardURI_replace { visibility: hidden; }
-			#_copyText { visibility: hidden; }
-			#_copyURL { visibility: hidden; }
-			#video { text-align: center; }
+			@media only screen {
+				body { background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
+				h2 { font-size: 15px; }
+				a { color: #336699; }
+				img { border: none; }
+				pre { display: inline; font-family: inherit; } 
+				.success { background-color: #AAFFAA; border: 1px solid #00CC00; font-weight: bolder; text-align: center; padding: 2px; color: #000000; margin-top: 3px; margin-bottom: 3px; }
+				.warn { background-color: #FFFFAA; border: 1px solid #CCCC00; font-weight: bolder; text-align: center; padding: 2px; color: #000000; margin-top: 3px; margin-bottom: 3px; }
+				.error { background-color: #FFAAAA; border: 1px solid #CC0000; font-weight: bolder; text-align: center; padding: 2px; color: #000000; margin-top: 3px; margin-bottom: 3px; }
+				.confirmURL { border-bottom: 1px solid #CCCCCC;  text-align: center; font-size: medium; }
+				.alternate { background-color: #F3F3F3; }
+				.copyText { color: #336699; text-decoration: underline; cursor: pointer; cursor: hand; }
+				._clipboardBar { text-align: right; }
+				.plainText { font-family: Arial, Helvetica, sans-serif; border: none; list-style-type: none; margin-bottom: 25px; }
+				.monoText { font-family:"Courier New",Courier,mono; list-style-type: decimal; }
+				.pastedImage { max-width: 500px; height : auto; }
+				.pastedImage { width: auto; max-height : 500px; }
+				.infoMessage { padding: 25px; font-size: medium; max-width: 800px; }
+				.lineHighlight { background-color: #FFFFAA; font-weight: bolder; color: #000000; }
+				.resizehandle {	background: #F0F0F0 scroll 45%; cursor: s-resize; text-align: center; color: #AAAAAA; height: 16px; width: 100%; } 
+				#newPaste { text-align: center; border-bottom: 1px dotted #CCCCCC; padding-bottom: 10px; }
+				#lineNumbers { width: 100%; max-height: 500px; background-color: #FFFFFF; overflow: auto; padding: 0; margin: 0; }
+				div#siteWrapper { width: 100%; margin: 0 auto; }
+				div#siteWrapper > #showAdminFunctions { max-width: 800px; margin: 25px; }
+				div#siteWrapper > #hiddenAdmin { max-width: 800px; margin: 25px; }
+				div#recentPosts { width: 15%; font-size: xx-small; float: left; position: relative; margin-left: 1%; }
+				div#pastebin { width: 82%; float: left; position: relative; padding-left: 1%; border-left: 1px dotted #CCCCCC; }
+				#pasteEnter { width: 100%; height: 250px; border: 1px solid #CCCCCC; background-color: #FFFFFF; }
+				#authorEnter { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; width: 68%;  }
+				#adminPass { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; width: 100%;  }
+				#copyrightInfo { color: #999999; font-size: xx-small; position: fixed; bottom: 0px; right: 10px; padding-bottom: 10px; text-align: left; }
+				ul#postList { padding: 0; margin-left: 0; list-style-type: none; margin-bottom: 50px; }
+				#adminAction { width: 100%; }
+				#urlField { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; height: 20px; width: 100%; }
+				#emphasizedURL	{ font-size: x-large; width: 100%; overflow: auto; font-style: italic; padding: 5px; }
+				#showAdminFunctions { font-size: xx-small; font-weight: bold; text-align: center; }
+				#hiddenAdmin { display: none; padding-right: 10px; }
+				#instructions { display: none; }
+				#serviceList li { margin-top: 7px; margin-bottom: 7px; list-style: square; }
+				#authorContainer { width: 48%; float: left; margin-bottom: 10px;  }
+				#authorContainerReply { padding-right: 52%; margin-bottom: 10px;  }
+				#submitContainer { width: 100%; display: block; }
+				#highlightContainer { margin-bottom: 5px; }
+				#lifespanContainer { margin-bottom: 5px; }
+				#privacyContainer { margin-bottom: 5px; }
+				#highlightContainer > select { width: 33%; background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; }
+				#lifespanContainer > select { width: 33%; background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; }
+				#privacyContainer > select { width: 33%; background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; }
+				#pasteImage { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; padding: 2px; }
+				#highlightContainer > label { width: 200px; display: block; }
+				#lifespanContainer > label { width: 200px; display: block; }
+				#privacyContainer > label { width: 200px; display: block; }
+				#fileUploadContainer { width: 48%; float: left; margin-bottom: 10px; }
+				#imageContainer { text-align: center; padding: 10px; }
+				#styleBar { text-align: left; position: relative; float: left; width: 48%; }
+				#retrievedPaste { width: 100%; position: relative; padding: 0; margin: 0; margin-top: 10px; margin-bottom: 10px; border: 1px solid #CCCCCC; }
+				#_clipboard_replace { visibility: hidden; }
+				#_clipboardURI_replace { visibility: hidden; }
+				#_copyText { visibility: hidden; }
+				#_copyURL { visibility: hidden; }
+				#video { text-align: center; }
+			}
 
 			@media print {
+				body { background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 10pt; }
 				pre { white-space: pre-wrap; }
+				a { color: #336699; }
+				#siteWrapper { width: auto; }
 				#recentPosts { display: none; }
-				#copyrightInfo { position: relative; top: 0px; right: 0px; width: 98%; padding: 1%; text-align: right; }
+				#copyrightInfo { position: relative; top: 0px; right: 0px; width: auto; padding: 1%; text-align: right; }
 				#retrievedPaste { border: none; }
 				#lineNumbers { max-height: none; width: auto; }
-				#pasteBin { width: 98%; }
+				#pasteBin { width: auto; border: none; }
 				#formContainer { display: none; }
 				#styleBar { display: none; } 
-				._clipboardBar { display: none; }
+				._clipboardBar { display: none; width: auto; }
+				.copyText { display: none; }
 				.spacer { display: none; }
+				.alternate { background-color: #F3F3F3; }
 			}
 		</style>
 		<?php

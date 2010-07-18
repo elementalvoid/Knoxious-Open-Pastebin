@@ -2028,6 +2028,12 @@ if($requri != "install")
 				#pasteBin { width: auto; border: none; }
 				#formContainer { display: none; }
 				#styleBar { display: none; } 
+				#_clipboard_replace { display: none; }
+				#_clipboardURI_replace { display: none; }
+				#_clipboard { display: none; }
+				#_clipboardURI {  display: none; }
+				#_copyText { display: none; }
+				#_copyURL { display: none; }
 				._clipboardBar { display: none; width: auto; }
 				.copyText { display: none; }
 				.spacer { display: none; }

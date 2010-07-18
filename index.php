@@ -2018,7 +2018,8 @@ if($requri != "install")
 
 			@media print {
 				body { background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 10pt; }
-				pre { white-space: pre-wrap; }
+				pre { white-space: pre-wrap; display: inline; }
+				li { padding: 0px; margin: 0px; }
 				a { color: #336699; }
 				#siteWrapper { width: auto; }
 				#recentPosts { display: none; }

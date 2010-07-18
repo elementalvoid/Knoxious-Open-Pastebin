@@ -2040,6 +2040,7 @@ if($requri != "install")
 				.copyText { display: none; }
 				.spacer { display: none; }
 				.alternate { background-color: #F3F3F3; }
+				.lineHighlight { background-color: #FFFFAA; font-weight: bolder; color: #000000; }
 			}
 		</style>
 		<?php

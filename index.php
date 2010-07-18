@@ -2021,6 +2021,7 @@ if($requri != "install")
 				pre { white-space: pre-wrap; display: inline; }
 				li { padding: 0px; margin: 0px; }
 				a { color: #336699; }
+				img { width: auto; max-width: 100%; }
 				#siteWrapper { width: auto; }
 				#recentPosts { display: none; }
 				#copyrightInfo { position: relative; top: 0px; right: 0px; width: auto; padding: 1%; text-align: right; }

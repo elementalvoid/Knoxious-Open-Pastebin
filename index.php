@@ -2156,7 +2156,7 @@ if($requri != "install")
 
 				/* AJAXIAN */
 
-				var tab = "    ";
+				var tab = "	";
        
 				function catchTab(evt) {
 				    var t = evt.target;
@@ -2446,7 +2446,7 @@ function checkIfURL(checkMe){
 <?php } ?>
 
 /* AJAXIAN */
-var tab = "    ";
+var tab = "	";
        
 function catchTab(evt) {
     var t = evt.target;

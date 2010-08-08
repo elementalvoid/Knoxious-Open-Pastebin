@@ -87,6 +87,13 @@ $CONFIG['pb_algo'] = NULL;
 $CONFIG['pb_rewrite'] = FALSE;
 # $CONFIG['pb_rewrite'] = TRUE;
 
+// Subdomain support? This will let people have their
+// own subdomains for their pastebin.
+// Wildcard Domains and DNS must be enabled else this will fail!
+// TRUE or FALSE
+$CONFIG['pb_subdomains'] = FALSE;
+# $CONFIG['pb_subdomains'] = TRUE;
+
 // Enable GZip compression
 // WARNING: Requires more CPU
 $CONFIG['pb_gzip'] = FALSE;
@@ -139,7 +146,7 @@ $CONFIG['pb_jQuery'] = FALSE;
 # $CONFIG['pb_jQuery'] = "/path/to/jQuery.js";
 
 // Path to _clipboard.swf (allows copying)
-// http://knoxious.co.uk/Knoxious%20Pastebin/index.html#_clipboard
+// http://knoxious.co.uk/Knoxious+Pastebin/index.html#_clipboard
 // Note that swfobject.js is also required in the same Directory
 $CONFIG['pb_clipboard'] = FALSE;
 # $CONFIG['pb_clipboard'] = "/path/to/_clipboard.swf";
@@ -477,6 +484,8 @@ class db
 							$result_temp = mysql_query($query);
 							while ($row = mysql_fetch_assoc($result_temp))
 								$result[] = $row;
+
+							mysql_free_result($result_temp);
 						break;
 						case "txt":
 							$result = array();
@@ -652,17 +661,25 @@ class db
 				return $filename;
 			}
 
-		public function insertPaste($id, $data)
+		public function insertPaste($id, $data, $arbLifespan = FALSE)
 			{
 
-				if((($this->config['pb_lifespan'][$data['Lifespan']] == FALSE || $this->config['pb_lifespan'][$data['Lifespan']] == 0) && $this->config['pb_infinity']) || !$this->config['pb_lifespan'])
+				if($arbLifespan && $data['Lifespan'] > 0)
+					$data['Lifespan'] = time() + $data['Lifespan'];
+				elseif($arbLifespan && $data['Lifespan'] == 0)
 					$data['Lifespan'] = 0;
 				else
-					$data['Lifespan'] = time() + ($this->config['pb_lifespan'][$data['Lifespan']] * 60 * 60 * 24);
+					{
+						if((($this->config['pb_lifespan'][$data['Lifespan']] == FALSE || $this->config['pb_lifespan'][$data['Lifespan']] == 0) && $this->config['pb_infinity']) || !$this->config['pb_lifespan'])
+							$data['Lifespan'] = 0;
+						else
+							$data['Lifespan'] = time() + ($this->config['pb_lifespan'][$data['Lifespan']] * 60 * 60 * 24);
+					}
 
 
 				$paste = array(	'ID'		=>	$id,
-						'Datetime'	=>	time(),
+						'Subdomain'	=>	$data['Subdomain'],
+						'Datetime'	=>	time() + $data['Time_offset'],
 						'Author'	=>	$data['Author'],
 						'Protection'	=>	$data['Protect'],
 						'Syntax' 	=>	$data['Syntax'],
@@ -687,7 +704,7 @@ class db
 					{
 						case "mysql":
 							$this->connect();
-							$query = "INSERT INTO " . $this->config['mysql_connection_config']['db_table'] . " (ID, Datetime, Author, Protection, Syntax, Parent, Image, ImageTxt, URL, Video, Lifespan, IP, Data, GeSHI, Style) VALUES ('" . $paste['ID'] . "', '" . $paste['Datetime'] . "', '" . $paste['Author'] . "', " . (int)$paste['Protection'] . ", '" . $paste['Syntax'] . "', '" . $paste['Parent'] . "', '" . $paste['Image'] . "', '" . $paste['ImageTxt'] . "', '" . $paste['URL'] . "', '" . $paste['Video'] . "', '" . (int)$paste['Lifespan'] . "', '" . $paste['IP'] . "', '" . $paste['Data'] . "', '" . $paste['GeSHI'] . "', '" . $paste['Style'] . "')";
+							$query = "INSERT INTO " . $this->config['mysql_connection_config']['db_table'] . " (ID, Subdomain, Datetime, Author, Protection, Syntax, Parent, Image, ImageTxt, URL, Video, Lifespan, IP, Data, GeSHI, Style) VALUES ('" . $paste['ID'] . "', '" . $paste['Subdomain'] . "', '" . $paste['Datetime'] . "', '" . $paste['Author'] . "', " . (int)$paste['Protection'] . ", '" . $paste['Syntax'] . "', '" . $paste['Parent'] . "', '" . $paste['Image'] . "', '" . $paste['ImageTxt'] . "', '" . $paste['URL'] . "', '" . $paste['Video'] . "', '" . (int)$paste['Lifespan'] . "', '" . $paste['IP'] . "', '" . $paste['Data'] . "', '" . $paste['GeSHI'] . "', '" . $paste['Style'] . "')";
 							$result = mysql_query($query);
 						break;
 						case "txt":
@@ -737,7 +754,7 @@ class db
 					{
 						case "mysql":
 							$this->connect();							
-							$query = "SELECT * FROM " . $this->config['mysql_connection_config']['db_table'] . " ORDER BY Datetime DESC LIMIT 1";
+							$query = "SELECT * FROM " . $this->config['mysql_connection_config']['db_table'] . " WHERE ID <> 'subdomain' && ID <> 'forbidden' ORDER BY Datetime DESC LIMIT 1";
 							$result = mysql_query($query);
 							$output = $this->config['pb_id_length'];
 							while($assoc = mysql_fetch_assoc($result))
@@ -750,6 +767,8 @@ class db
 
 							if($output < 1)
 								$output = $this->config['pb_id_length'];
+
+							mysql_free_result($result);
 
 						break;
 						case "txt":
@@ -849,7 +868,7 @@ class bin
 		
 		public function generateID($id = FALSE, $iterations = 0)
 			{
-				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo');
+				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo', 'subdomain', 'forbidden');
 
 				if($iterations > 0 && $iterations < 4 && $id != FALSE)
 					$id = $this->generateRandomString($this->db->getLastID());
@@ -886,16 +905,20 @@ class bin
 
 		public function getLastPosts($amount)
 			{
-				
 				switch($this->db->dbt)
 					{
 						case "mysql":
 							$this->db->connect();
 							$result = array();
-							$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE Protection < 1 ORDER BY Datetime DESC LIMIT " . $amount;
+							if($this->db->config['subdomain'])
+								$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE Protection < 1 AND Subdomain = '" . $this->db->config['subdomain'] . "' ORDER BY Datetime DESC LIMIT " . $amount;
+							else
+								$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE Protection < 1 AND Subdomain = '' ORDER BY Datetime DESC LIMIT " . $amount;
 							$result_temp = mysql_query($query);
 								while ($row = mysql_fetch_assoc($result_temp))
 									 $result[] = $row;
+
+							mysql_free_result($result_temp);
 						break;
 						case "txt":
 							$index = $this->db->deserializer($this->db->read($this->db->setDataPath() . "/" . $this->db->config['txt_config']['db_index']));
@@ -1129,7 +1152,7 @@ class bin
 
 		public function generateRandomString($length)
 			{
-				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo');
+				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo', 'subdomain', 'forbidden');
 
 				$characters = "123456789abcdefghijklmnopqrstuvwxyz";  
 				$output = "";
@@ -1157,6 +1180,8 @@ class bin
 							$result_temp = mysql_query($query);
 								while ($row = mysql_fetch_assoc($result_temp))
 									 $result[] = $row;
+
+							mysql_free_result($result_temp);
 						break;
 						case "txt":
 							$index = $this->db->deserializer($this->db->read($this->db->setDataPath() . "/" . $this->db->config['txt_config']['db_index']));
@@ -1209,6 +1234,144 @@ class bin
 								$output = $now . "/" . $file . "?" . $id;
 						break;
 					}
+
+				return $output;
+			}
+
+		public function setSubdomain()
+			{
+				if(!$this->db->config['pb_subdomains'])
+					return NULL;
+
+				$domain = strtolower(str_replace("www.", "", $_SERVER['SERVER_NAME']));
+				$explode = explode(".", $domain, 2);
+				$sub = $explode[0];
+
+				if(!file_exists('INSTALL_LOCK'))
+					return NULL;
+
+				switch($this->db->dbt)
+					{
+						case "mysql":
+							$this->db->connect();
+							$subdomain_list = array();
+							$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE ID = 'forbidden' LIMIT 1";
+							$result_temp = mysql_query($query);
+								while($row = mysql_fetch_assoc($result_temp))
+									 $subdomain_list['forbidden'] = unserialize($row['Data']);
+
+							$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE ID = 'subdomain' AND Subdomain = '" . $sub . "'";
+							$result_temp = mysql_query($query);
+							if(mysql_num_rows($result_temp) > 0)
+								$in_list = TRUE;
+							else
+								$in_list = FALSE;
+
+							mysql_free_result($result_temp);
+						break;
+						case "txt":
+							$subdomainsFile = $this->db->config['txt_config']['db_folder'] . "/" . $this->db->config['txt_config']['db_index'] . "_SUBDOMAINS";
+							$subdomain_list = $this->db->deserializer($this->db->read($subdomainsFile));
+							$in_list = in_array($sub, $subdomain_list);
+						break;
+					}
+
+				if(!in_array($sub, $subdomain_list['forbidden']) && $in_list)
+					{
+						$this->db->config['txt_config']['db_folder'] = $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $sub;
+						return $sub;
+					}
+				else
+					return NULL;				
+			}
+
+		public function makeSubdomain($subdomain)
+			{
+				if(!file_exists('INSTALL_LOCK'))
+					return NULL;
+
+				if(!$this->db->config['pb_subdomains'])
+					return FALSE;
+
+				$subdomain = strtolower($subdomain);
+
+				switch($this->db->dbt)
+					{
+						case "mysql":
+							$this->db->connect();
+							$subdomain_list = array();
+							$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE ID = 'forbidden' LIMIT 1";
+							$result_temp = mysql_query($query);
+								while($row = mysql_fetch_assoc($result_temp))
+									 $subdomain_list['forbidden'] = unserialize($row['Data']);
+
+							$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE ID = 'subdomain' AND Subdomain = '" . $subdomain . "'";
+							$result_temp = mysql_query($query);
+							if(mysql_num_rows($result_temp) > 0)
+								$in_list = TRUE;
+							else
+								$in_list = FALSE;
+
+							mysql_free_result($result_temp);
+						break;
+						case "txt":
+							$subdomainsFile = $this->db->config['txt_config']['db_folder'] . "/" . $this->db->config['txt_config']['db_index'] . "_SUBDOMAINS";
+							$subdomain_list = $this->db->deserializer($this->db->read($subdomainsFile));
+							$in_list = in_array($subdomain, $subdomain_list);
+						break;
+					}
+
+				if(!in_array($subdomain, $subdomain_list['forbidden']) && !$in_list)
+					{
+						switch($this->db->dbt)
+							{
+								case "mysql":
+									$domain = array('ID' => "subdomain", 'Subdomain' => $this->checkAuthor($subdomain), 'Image' => 1, 'Author' => "System", 'Protect' => 1, 'Lifespan' => 0, 'Content' => "Subdomain marker");
+									$this->db->insertPaste($domain['ID'], $domain, TRUE);
+									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, 0777);
+									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], 0777);
+									$this->db->write("FORBIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html");
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", 0777);
+									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", 0666);
+									return $this->checkAuthor($subdomain);
+								break;
+								case "txt":
+									$subdomain_list[] = $this->checkAuthor($subdomain);
+									$subdomain_list = $this->db->serializer($subdomain_list);
+									$this->db->write($subdomain_list, $subdomainsFile);
+									$subdomain = $this->checkAuthor($subdomain);
+									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, 0777);
+									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], 0777);
+									$this->db->write("FORBIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html");
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", 0777);
+									$this->db->write($this->db->serializer(array()), $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index'], 0666);
+									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", 0666);
+									return $this->checkAuthor($subdomain);
+								break;
+							}
+					}
+				else
+					return FALSE;				
+			}
+
+		public function generateForbiddenSubdomains($mysql = FALSE)
+			{
+				$domain = str_replace("www.", "", $_SERVER['SERVER_NAME']);
+				$explode = explode(".", $domain, 2);
+				$domain = $explode[0];
+				$output = array(
+					'forbidden' => array("www", $domain, "admin", "owner", "api")
+				);
+
+				if($mysql)
+					$output = array("www", $domain, "admin", "owner", "api");
 
 				return $output;
 			}
@@ -1485,6 +1648,19 @@ $bin = new bin($db);
 $CONFIG['pb_pass'] = $bin->hasher($CONFIG['pb_pass'], $CONFIG['pb_salts']);
 $db->config['pb_pass'] = $CONFIG['pb_pass'];
 $bin->db->config['pb_pass'] = $CONFIG['pb_pass'];
+
+if(file_exists('./INSTALL_LOCK') && @$_POST['subdomain'] && $CONFIG['pb_subdomains'])
+	{
+		$seed = $bin->makeSubdomain(@$_POST['subdomain']);
+		if($seed)
+			header("Location: " . str_replace("http://", "http://" . $seed . ".", $bin->linker()));
+		else
+			header("Location: " . $bin->linker());
+	}
+
+$CONFIG['subdomain'] = $bin->setSubdomain();
+$db->config['subdomain'] = $CONFIG['subdomain'];
+$bin->db->config['subdomain'] = $CONFIG['subdomain'];
 
 $ckey = $bin->cookieName();
 
@@ -1769,6 +1945,7 @@ if($requri == "api")
 		
 				$paste = array(
 					'ID' => $pasteID,
+					'Subdomain' => $bin->db->config['subdomain'],
 					'Author' => $bin->checkAuthor(@$_POST['author']),
 					'IP' => $_SERVER['REMOTE_ADDR'],
 					'Image' => $imageUpload,
@@ -1981,6 +2158,8 @@ if($requri != "install")
 				div#pastebin { width: 82%; float: left; position: relative; padding-left: 1%; border-left: 1px dotted #CCCCCC; }
 				#pasteEnter { width: 100%; height: 250px; border: 1px solid #CCCCCC; background-color: #FFFFFF; }
 				#authorEnter { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; width: 68%;  }
+				#subdomain { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; }
+				#subdomain_form { margin-top: 5px; }
 				#adminPass { background-color: #FFFFFF; border-top: 1px solid #CCCCCC; border-bottom: 1px solid #CCCCCC; border-left: none; border-right: none; width: 100%;  }
 				#copyrightInfo { color: #999999; font-size: xx-small; position: fixed; bottom: 0px; right: 10px; padding-bottom: 10px; text-align: left; }
 				ul#postList { padding: 0; margin-left: 0; list-style-type: none; margin-bottom: 50px; }
@@ -2824,6 +3003,7 @@ if($requri != "install" && @$_POST['submit'])
 		$paste = array(
 			'ID' => $pasteID,
 			'Author' => $bin->checkAuthor(@$_POST['author']),
+			'Subdomain' => $bin->db->config['subdomain'],
 			'IP' => $_SERVER['REMOTE_ADDR'],
 			'Image' => $imageUpload,
 			'ImageTxt' => "Image file (" . @$_FILES['pasteImage']['name'] . ") uploaded...",
@@ -3207,7 +3387,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				if(count($stage) > 2)
 				{ echo "<li>Checking Database Connection. ";
 					if($db->dbt == "txt")
-						{ if(!is_dir($CONFIG['txt_config']['db_folder'])) { mkdir($CONFIG['txt_config']['db_folder']); mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], 0777); chmod($CONFIG['txt_config']['db_folder'], 0777); } $db->write($db->serializer(array()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index']); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); chmod ($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'], 0666); chmod($CONFIG['txt_config']['db_folder'] . "/index.html", 0666); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", 0666);	}
+						{ if(!is_dir($CONFIG['txt_config']['db_folder'])) { mkdir($CONFIG['txt_config']['db_folder']); mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], 0777); chmod($CONFIG['txt_config']['db_folder'], 0777); chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", 0777); } $db->write($db->serializer(array()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index']); $db->write($db->serializer($bin->generateForbiddenSubdomains()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'], 0666); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS", 0666); chmod($CONFIG['txt_config']['db_folder'] . "/index.html", 0666); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", 0666);	}
 					if(!$db->connect())
 						echo "<span class=\"error\">Cannot connect to database!</span> - Check Config in index.php";
 					else
@@ -3216,28 +3396,32 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 
 				if(count($stage) > 3)
 				{ echo "<li>Creating Database Tables. ";
-					$structure = "CREATE TABLE IF NOT EXISTS " . $CONFIG['mysql_connection_config']['db_table'] . " (ID longtext, Datetime bigint, Author varchar(255), Protection int, Syntax varchar(255) DEFAULT 'plaintext', Parent longtext, Image longtext, ImageTxt longtext, URL longtext, Video longtext, Lifespan int, IP varchar(225), Data longtext, GeSHI longtext, Style longtext, PRIMARY KEY (Datetime))";
+					$structure = "CREATE TABLE IF NOT EXISTS " . $CONFIG['mysql_connection_config']['db_table'] . " (ID varchar(255), Subdomain varchar(100), Datetime bigint, Author varchar(255), Protection int, Syntax varchar(255) DEFAULT 'plaintext', Parent longtext, Image longtext, ImageTxt longtext, URL longtext, Video longtext, Lifespan int, IP varchar(225), Data longtext, GeSHI longtext, Style longtext, PRIMARY KEY (Datetime))";
 				if($db->dbt == "mysql")
 					{				
-					if(!mysql_query($structure, $db->link) && !$CONFIG['mysql_connection_config']['db_existing'])
-						{ echo "<span class=\"error\">Structure failed</span> - Check Config in index.php (Does the table already exist?)"; }
-					else
-						{ echo "<span class=\"success\">Table created!</span>"; $stage[] = 1;
-						  if($CONFIG['mysql_connection_config']['db_existing'])
-							echo "<span class=\"warn\">Attempting to use an existing table!</span> If this is not a Pastebin table a fault will occur."; 
-							if($CONFIG['pb_images'])
-								{
-									mkdir($CONFIG['txt_config']['db_folder']);
-									chmod($CONFIG['txt_config']['db_folder'], 0777);
-									mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); 
-									chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], 0777);
-									$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); 
-									chmod($CONFIG['txt_config']['db_folder'] . "/index.html", 0666);
-									$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); 
-									chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", 0666);
+						if(!mysql_query($structure, $db->link) && !$CONFIG['mysql_connection_config']['db_existing'])
+							{ echo "<span class=\"error\">Structure failed</span> - Check Config in index.php (Does the table already exist?)"; }
+						else
+							{ echo "<span class=\"success\">Table created!</span>"; 
+							  $stage[] = 1;
+							  if($CONFIG['mysql_connection_config']['db_existing'])
+								echo "<span class=\"warn\">Attempting to use an existing table!</span> If this is not a Pastebin table a fault will occur."; 
 
-								}
-						}
+								mkdir($CONFIG['txt_config']['db_folder']);
+								chmod($CONFIG['txt_config']['db_folder'], 0777);
+								mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain");
+								chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", 0777);
+								mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); 
+								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], 0777);
+								$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); 
+								chmod($CONFIG['txt_config']['db_folder'] . "/index.html", 0666);
+								$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); 
+								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", 0666);
+
+								$forbidden_array = array('ID' => 'forbidden', 'Time_offset' => 10, 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 0, 'Image' => TRUE, 'Protect' => 1, 'Content' => serialize($bin->generateForbiddenSubdomains(TRUE)));
+
+								$db->insertPaste($forbidden_array['ID'], $forbidden_array, TRUE);
+							}
 					} else
 						{
 							echo "<span class=\"success\">Table created!</span>"; $stage[] = 1;
@@ -3252,11 +3436,25 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				echo "</li>"; }
 			echo "</ul>";
 				if(count($stage) > 5)
-				{ echo "<div id=\"confirmInstalled\"><a href=\"" . $bin->linker() . "\">Continue</a> to your new installation!<br /></div>";
+				{ $paste_new = array('ID' => $bin->generateRandomString(1), 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 1800, 'Image' => TRUE, 'Protect' => 0, 'Content' => $CONFIG['pb_line_highlight'] . "Congratulations, your pastebin has now been installed!\nThis message will expire in 30 minutes!");
+				$db->insertPaste($paste_new['ID'], $paste_new, TRUE);
+				echo "<div id=\"confirmInstalled\"><a href=\"" . $bin->linker() . "\">Continue</a> to your new installation!<br /></div>";
 				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to 0755.</div>"; }
 			echo "</div>";
+
 		} else
 			{
+				if($CONFIG['subdomain'])
+					$domain_name = str_replace(array("http://", $CONFIG['subdomain'] . ".", "www."), "", $bin->linker());
+				else
+					$domain_name = str_replace(array("http://", "www."), "", $bin->linker());
+					
+				if($CONFIG['subdomain'])
+					$subdomain_action = str_replace($CONFIG['subdomain'] . ".", "", $bin->linker());
+				else
+					$subdomain_action = $bin->linker();
+					
+				$subdomainForm = "<form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form>";
 
 				if(strlen($bin->linker()) < 16)
 					$isShortURL = " If your text is a URL, the pastebin will recognize it and will create a Short URL forwarding page! (Like bit.ly, is.gd, etc)";
@@ -3296,6 +3494,11 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 					$service['url'] = array('style' => 'success', 'status' => 'Enabled', 'tip' => $isShortURL, 'str' => '/url');
 				else
 					$service['url'] = array('style' => 'error', 'status' => 'Disabled', 'tip' => NULL, 'str' => NULL);
+
+				if($CONFIG['pb_subdomains'])
+					$service['subdomains'] = array('style' => 'success', 'status' => 'Enabled', 'tip' => $subdomainForm);
+				else
+					$service['subdomains'] = array('style' => 'error', 'status' => 'Disabled', 'tip' => NULL);
 
 				if($bin->jQuery())
 					$service['jQuery'] = array('style' => 'success', 'status' => 'Enabled');
@@ -3340,7 +3543,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				$bin->setTagline($CONFIG['pb_tagline'])
 				. "<div id=\"result\">&nbsp;</div>
 				<div id=\"formContainer\">
-				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
+				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains " . $service['subdomains']['tip'] . "</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">
 						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]</span></label><br />
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\"></textarea></div>

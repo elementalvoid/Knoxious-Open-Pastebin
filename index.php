@@ -1238,17 +1238,20 @@ class bin
 				return $output;
 			}
 
-		public function setSubdomain()
+		public function setSubdomain($force = FALSE)
 			{
 				if(!$this->db->config['pb_subdomains'])
+					return NULL;
+
+				if($force)
+					return $this->db->config['txt_config']['db_folder'] = $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $force;
+
+				if(!file_exists('INSTALL_LOCK'))
 					return NULL;
 
 				$domain = strtolower(str_replace("www.", "", $_SERVER['SERVER_NAME']));
 				$explode = explode(".", $domain, 2);
 				$sub = $explode[0];
-
-				if(!file_exists('INSTALL_LOCK'))
-					return NULL;
 
 				switch($this->db->dbt)
 					{
@@ -3143,7 +3146,9 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 
 				if($pasted['Syntax'] == NULL || is_bool($pasted['Syntax']) || is_numeric($pasted['Syntax']))
 					$pasted['Syntax'] = "plaintext";
-					
+
+				if($pasted['Subdomain'] != NULL && !$CONFIG['subdomain'])
+					$bin->setSubdomain($pasted['Subdomain']);					
 				
 				if($bin->highlight() && $pasted['Syntax'] != "plaintext")
 					{

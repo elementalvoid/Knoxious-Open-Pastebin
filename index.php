@@ -3464,14 +3464,17 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 		} else
 			{
 				if($CONFIG['subdomain'])
-					$domain_name = str_replace(array("http://", $CONFIG['subdomain'] . ".", "www."), "", $bin->linker());
+					{
+						$domain_name = str_replace(array("http://", $CONFIG['subdomain'] . ".", "www."), "", $bin->linker());
+						$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">Make a subdomain</a> ]";
+						$subdomain_action = str_replace($CONFIG['subdomain'] . ".", "", $bin->linker());
+					}
 				else
-					$domain_name = str_replace(array("http://", "www."), "", $bin->linker());
-					
-				if($CONFIG['subdomain'])
-					$subdomain_action = str_replace($CONFIG['subdomain'] . ".", "", $bin->linker());
-				else
-					$subdomain_action = $bin->linker();
+					{
+						$domain_name = str_replace(array("http://", "www."), "", $bin->linker());
+						$subdomainClicker = NULL;
+						$subdomain_action = $bin->linker();
+					}
 					
 				$subdomainForm = "<form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form>";
 
@@ -3564,7 +3567,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				<div id=\"formContainer\">
 				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains " . $service['subdomains']['tip'] . "</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">
-						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]</span></label><br />
+						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]" . $subdomainClicker . "</span></label><br />
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\"></textarea></div>
 						<div id=\"foundURL\" style=\"display: none;\">URL has been detected...</div>
 						<div class=\"spacer\">&nbsp;</div>

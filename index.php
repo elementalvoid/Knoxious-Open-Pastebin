@@ -903,6 +903,20 @@ class bin
 					return addslashes($this->db->lessHTML($author));
 			}
 
+		public function checkSubdomain($subdomain)
+			{
+				if($subdomain == FALSE)
+					return FALSE;
+
+				if(preg_match('/^\s/', $subdomain) || preg_match('/\s$/', $subdomain) || preg_match('/^\s$/', $subdomain))
+					return FALSE;
+				elseif(ctype_alnum($subdomain))
+					return $subdomain;
+				else
+					return preg_replace("/[^A-Za-z0-9]/i", "", $subdomain);
+			}
+
+
 		public function getLastPosts($amount)
 			{
 				switch($this->db->dbt)
@@ -1296,7 +1310,7 @@ class bin
 				if(!$this->db->config['pb_subdomains'])
 					return FALSE;
 
-				$subdomain = strtolower($subdomain);
+				$subdomain = $this->checkSubdomain(strtolower($subdomain));
 
 				switch($this->db->dbt)
 					{
@@ -1329,7 +1343,7 @@ class bin
 						switch($this->db->dbt)
 							{
 								case "mysql":
-									$domain = array('ID' => "subdomain", 'Subdomain' => $this->checkAuthor($subdomain), 'Image' => 1, 'Author' => "System", 'Protect' => 1, 'Lifespan' => 0, 'Content' => "Subdomain marker");
+									$domain = array('ID' => "subdomain", 'Subdomain' => $subdomain, 'Image' => 1, 'Author' => "System", 'Protect' => 1, 'Lifespan' => 0, 'Content' => "Subdomain marker");
 									$this->db->insertPaste($domain['ID'], $domain, TRUE);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
 									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, 0777);
@@ -1339,13 +1353,13 @@ class bin
 									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", 0777);
 									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
 									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", 0666);
-									return $this->checkAuthor($subdomain);
+									return $subdomain;
 								break;
 								case "txt":
-									$subdomain_list[] = $this->checkAuthor($subdomain);
+									$subdomain_list[] = $subdomain;
 									$subdomain_list = $this->db->serializer($subdomain_list);
 									$this->db->write($subdomain_list, $subdomainsFile);
-									$subdomain = $this->checkAuthor($subdomain);
+									$subdomain = $subdomain;
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
 									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, 0777);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);
@@ -1356,7 +1370,7 @@ class bin
 									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index'], 0666);
 									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
 									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", 0666);
-									return $this->checkAuthor($subdomain);
+									return $subdomain;
 								break;
 							}
 					}

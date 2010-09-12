@@ -3463,16 +3463,19 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 
 		} else
 			{
+				if($CONFIG['pb_subdomains'])
+					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">Make a subdomain</a> ]";
+				else
+					$subdomainClicker = NULL;
+
 				if($CONFIG['subdomain'])
 					{
 						$domain_name = str_replace(array("http://", $CONFIG['subdomain'] . ".", "www."), "", $bin->linker());
-						$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">Make a subdomain</a> ]";
 						$subdomain_action = str_replace($CONFIG['subdomain'] . ".", "", $bin->linker());
 					}
 				else
 					{
 						$domain_name = str_replace(array("http://", "www."), "", $bin->linker());
-						$subdomainClicker = NULL;
 						$subdomain_action = $bin->linker();
 					}
 					

@@ -3464,7 +3464,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 		} else
 			{
 				if($CONFIG['pb_subdomains'])
-					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">Make a subdomain</a> ]";
+					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">make a subdomain</a> ]";
 				else
 					$subdomainClicker = NULL;
 

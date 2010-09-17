@@ -2111,7 +2111,10 @@ if($requri == "api")
 	}
 
 if($requri != "install" && $requri != NULL && $bin->checkIfRedir($requri) != false && substr($requri, -1) != "!" && !$_POST['adminProceed'])
-	header("Location: " . $bin->checkIfRedir($requri));
+	{
+		header("Location: " . $bin->checkIfRedir($requri));
+		die("This is a URL/Mailto forward holding page!");
+	}
 
 if($requri != "install" && $requri != NULL && substr($requri, -1) != "!" && !$_POST['adminProceed'] && $reqhash == "raw")
 	{

@@ -482,6 +482,9 @@ class db
 							$query = "SELECT * FROM " . $this->config['mysql_connection_config']['db_table'] . " WHERE ID = '" . $id . "'";
 							$result = array();
 							$result_temp = mysql_query($query);
+							if(!$result_temp || mysql_num_rows($result_temp) < 1)
+								return false;
+
 							while ($row = mysql_fetch_assoc($result_temp))
 								$result[] = $row;
 
@@ -695,7 +698,7 @@ class db
 						'Style'		=>	$this->cleanHTML($data['Style'])
 					);
 
-				if($paste['Protection'] > 0  && $this->config['pb_private'])
+				if(($paste['Protection'] > 0  && $this->config['pb_private']) || ($paste['Protection'] > 0 && $arbLifespan))
 					$id = "!" . $id;
 				else
 					$paste['Protection'] = 0;
@@ -929,8 +932,11 @@ class bin
 							else
 								$query = "SELECT * FROM " . $this->db->config['mysql_connection_config']['db_table'] . " WHERE Protection < 1 AND Subdomain = '' ORDER BY Datetime DESC LIMIT " . $amount;
 							$result_temp = mysql_query($query);
-								while ($row = mysql_fetch_assoc($result_temp))
-									 $result[] = $row;
+							if(!$result_temp || mysql_num_rows($result_temp) < 1)
+								return NULL;
+							
+							while ($row = mysql_fetch_assoc($result_temp))
+								 $result[] = $row;
 
 							mysql_free_result($result_temp);
 						break;
@@ -3415,7 +3421,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 
 				if(count($stage) > 3)
 				{ echo "<li>Creating Database Tables. ";
-					$structure = "CREATE TABLE IF NOT EXISTS " . $CONFIG['mysql_connection_config']['db_table'] . " (ID varchar(255), Subdomain varchar(100), Datetime bigint, Author varchar(255), Protection int, Syntax varchar(255) DEFAULT 'plaintext', Parent longtext, Image longtext, ImageTxt longtext, URL longtext, Video longtext, Lifespan int, IP varchar(225), Data longtext, GeSHI longtext, Style longtext, PRIMARY KEY (Datetime))";
+					$structure = "CREATE TABLE IF NOT EXISTS " . $CONFIG['mysql_connection_config']['db_table'] . " (ID varchar(255), Subdomain varchar(100), Datetime bigint, Author varchar(255), Protection int, Syntax varchar(255) DEFAULT 'plaintext', Parent longtext, Image longtext, ImageTxt longtext, URL longtext, Video longtext, Lifespan int, IP varchar(225), Data longtext, GeSHI longtext, Style longtext, INDEX (id)) ENGINE = INNODB";
 				if($db->dbt == "mysql")
 					{				
 						if(!mysql_query($structure, $db->link) && !$CONFIG['mysql_connection_config']['db_existing'])

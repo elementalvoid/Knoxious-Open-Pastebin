@@ -1877,7 +1877,7 @@ if($requri == "api")
 
 				if(@$_POST['urlField'])
 					$postedURL = $_POST['urlField'];
-				elseif(preg_match('/^(ht|f)tp/', @$_POST['pasteEnter']) && count(explode("\n", $_POST['pasteEnter'])) < 2)
+				elseif(preg_match('/^((ht|f)tp|mailto):/', @$_POST['pasteEnter']) && count(explode("\n", $_POST['pasteEnter'])) < 2)
 					$postedURL = $_POST['pasteEnter'];
 				else
 					$postedURL = NULL;
@@ -2958,7 +2958,7 @@ if($requri != "install" && @$_POST['submit'])
 
 		if(@$_POST['urlField'])
 			$postedURL = $_POST['urlField'];
-		elseif(preg_match('/^(ht|f)tp/', @$_POST['pasteEnter']) && count(explode("\n", $_POST['pasteEnter'])) < 2)
+		elseif(preg_match('/^((ht|f)tp|mailto):/', @$_POST['pasteEnter']) && count(explode("\n", $_POST['pasteEnter'])) < 2)
 			$postedURL = $_POST['pasteEnter'];
 		else
 			$postedURL = NULL;

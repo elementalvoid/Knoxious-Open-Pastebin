@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.1
+ *	Knoxious Open Pastebin		 v 1.1.2
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -2155,7 +2155,6 @@ if($requri != "install")
 			else {
 		?>
 		<style type="text/css">
-			@media only screen {
 				body { background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
 				h2 { font-size: 15px; }
 				a { color: #336699; }
@@ -2218,8 +2217,7 @@ if($requri != "install")
 				#_copyText { visibility: hidden; }
 				#_copyURL { visibility: hidden; }
 				#video { text-align: center; }
-			}
-
+			
 			@media print {
 				body { background: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 10pt; }
 				pre { white-space: pre-wrap; display: inline; }

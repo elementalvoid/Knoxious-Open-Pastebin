@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.2
+ *	Knoxious Open Pastebin		 v 1.1.3
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -1138,7 +1138,7 @@ class bin
 							return false;
 					} else
 						{
-							if(file_exists($this->db->config['pb_clipboard']) && file_exists($cbdir) . "/swfobject.js")
+							if(file_exists($this->db->config['pb_clipboard']) && file_exists($cbdir . "/swfobject.js"))
 								return true;
 							else
 								return false;

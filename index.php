@@ -3399,7 +3399,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				{ echo "<li>Quick password check. ";
 					$passLen = array(8, 9, 10, 11, 12);
 					shuffle($passLen);
-					if($CONFIG['pb_pass'] === $bin->hasher(hash($CONFIG['pb_algo', "password"), $CONFIG['pb_salts']) || !isset($CONFIG['pb_pass']))
+					if($CONFIG['pb_pass'] === $bin->hasher(hash($CONFIG['pb_algo'], "password"), $CONFIG['pb_salts']) || !isset($CONFIG['pb_pass']))
 						echo "<span class=\"error\">Password is still default!</span> &nbsp; &raquo; &nbsp; Suggested password: <em>" . $bin->generateRandomString($passLen[0]) . "</em>";
 					else
 						{ echo "<span class=\"success\">Password is not default!</span>"; $stage[] = 1; }

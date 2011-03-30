@@ -219,6 +219,11 @@ $CONFIG['pb_infinity_default'] = FALSE;
 $CONFIG['pb_private'] = FALSE;
 # $CONFIG['pb_private'] = TRUE;
 
+// File and directory creation modes
+// These defauls should work for most cases
+$CONFIG['file_mode'] = 0664;
+$CONFIG['dir_mode'] = 0775;
+
 // Error reporting? Time Limit? Memory Usage? Why not!
 @error_reporting(E_ALL ^ E_NOTICE);
 @set_time_limit(180);

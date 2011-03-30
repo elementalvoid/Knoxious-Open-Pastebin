@@ -154,9 +154,9 @@ class db
 						if(!file_exists($path) && is_writable($this->config['txt_config']['db_folder']))
 							{
 								mkdir($path);
-								chmod($path, 0777);
+								chmod($path, $CONFIG['dir_mode']);
 								$this->write("FORBIDDEN", $path . "/index.html");
-								chmod($path . "/index.html", 0666);
+								chmod($path . "/index.html", $CONFIG['file_mode']);
 							}
 
 						for ($i = 1; $i <= $this->config['max_folder_depth'] - 1; $i++) {
@@ -169,9 +169,9 @@ class db
 							if(!file_exists($path) && is_writable($parent))
 								{
 									mkdir($path);
-									chmod($path, 0777);
+									chmod($path, $CONFIG['dir_mode']);
 									$this->write("FORBIDDEN", $path . "/index.html");
-									chmod($path . "/index.html", 0666);
+									chmod($path . "/index.html", $CONFIG['file_mode']);
 								}
 
 						}
@@ -184,9 +184,9 @@ class db
 							if(!file_exists($path) && is_writable($this->config['txt_config']['db_folder'] . "/" . $this->config['txt_config']['db_images']))
 								{
 									mkdir($path);
-									chmod($path, 0777);
+									chmod($path, $CONFIG['dir_mode']);
 									$this->write("FORBIDDEN", $path . "/index.html");
-									chmod($path . "/index.html", 0666);
+									chmod($path . "/index.html", $CONFIG['file_mode']);
 								}
 
 
@@ -200,9 +200,9 @@ class db
 								if(!file_exists($path) && is_writable($parent))
 									{
 										mkdir($path);
-										chmod($path, 0777);
+										chmod($path, $CONFIG['dir_mode']);
 										$this->write("FORBIDDEN", $path . "/index.html");
-										chmod($path . "/index.html", 0666);
+										chmod($path . "/index.html", $CONFIG['file_mode']);
 									}
 
 							}
@@ -397,7 +397,7 @@ class db
 				if(!move_uploaded_file($file['tmp_name'], $path))
 					return false;
 				
-				chmod($path, 0777);
+				chmod($path, $CONFIG['dir_mode']);
 
 				if(!$rename)
 					$filename = $file['name'];
@@ -438,7 +438,7 @@ class db
 				fwrite($fopen, $data);
 				fclose($fopen);
 
-				chmod($path, 0777);
+				chmod($path, $CONFIG['dir_mode']);
 
 				$filename = $rename . "." . strtolower($info['extension']);
 
@@ -496,7 +496,7 @@ class db
 							$index[] = $id;
 							$this->write($this->serializer($index), $this->setDataPath() . "/" . $this->config['txt_config']['db_index']);				
 							$result = $this->write($this->serializer($paste), $this->setDataPath($paste['ID']));
-							chmod($this->setDataPath($paste['ID']), 0666);
+							chmod($this->setDataPath($paste['ID']), $CONFIG['file_mode']);
 						break;
 					}
 				return $result;
@@ -1133,13 +1133,13 @@ class bin
 									$domain = array('ID' => "subdomain", 'Subdomain' => $subdomain, 'Image' => 1, 'Author' => "System", 'Protect' => 1, 'Lifespan' => 0, 'Content' => "Subdomain marker");
 									$this->db->insertPaste($domain['ID'], $domain, TRUE);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, 0777);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, $CONFIG['dir_mode']);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], 0777);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], $CONFIG['dir_mode']);
 									$this->db->write("FORBIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", 0777);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", $CONFIG['dir_mode']);
 									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", 0666);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);
 									return $subdomain;
 								break;
 								case "txt":
@@ -1148,15 +1148,15 @@ class bin
 									$this->db->write($subdomain_list, $subdomainsFile);
 									$subdomain = $subdomain;
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, 0777);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, $CONFIG['dir_mode']);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], 0777);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], $CONFIG['dir_mode']);
 									$this->db->write("FORBIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", 0777);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", $CONFIG['dir_mode']);
 									$this->db->write($this->db->serializer(array()), $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index']);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index'], 0666);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index'], $CONFIG['file_mode']);
 									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", 0666);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);
 									return $subdomain;
 								break;
 							}
@@ -3165,7 +3165,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 			echo "<ul id=\"installList\">";
 				echo "<li>Checking Directory is writable. ";
 					if(!is_writable($bin->thisDir()))
-						echo "<span class=\"error\">Directory is not writable!</span> - CHMOD to 0777";
+						echo "<span class=\"error\">Directory is not writable!</span> - CHMOD to $CONFIG['dir_mode']";
 					else
 						{ echo "<span class=\"success\">Directory is writable!</span>"; $stage[] = 1; }
 				echo "</li>";
@@ -3194,7 +3194,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				if(count($stage) > 2)
 				{ echo "<li>Checking Database Connection. ";
 					if($db->dbt == "txt")
-						{ if(!is_dir($CONFIG['txt_config']['db_folder'])) { mkdir($CONFIG['txt_config']['db_folder']); mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], 0777); chmod($CONFIG['txt_config']['db_folder'], 0777); chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", 0777); } $db->write($db->serializer(array()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index']); $db->write($db->serializer($bin->generateForbiddenSubdomains()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'], 0666); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS", 0666); chmod($CONFIG['txt_config']['db_folder'] . "/index.html", 0666); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", 0666);	}
+						{ if(!is_dir($CONFIG['txt_config']['db_folder'])) { mkdir($CONFIG['txt_config']['db_folder']); mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], $CONFIG['dir_mode']); chmod($CONFIG['txt_config']['db_folder'], $CONFIG['dir_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", $CONFIG['dir_mode']); } $db->write($db->serializer(array()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index']); $db->write($db->serializer($bin->generateForbiddenSubdomains()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'], $CONFIG['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS", $CONFIG['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/index.html", $CONFIG['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);	}
 					if(!$db->connect())
 						echo "<span class=\"error\">Cannot connect to database!</span> - Check Config in index.php";
 					else
@@ -3215,15 +3215,15 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 								echo "<span class=\"warn\">Attempting to use an existing table!</span> If this is not a Pastebin table a fault will occur."; 
 
 								mkdir($CONFIG['txt_config']['db_folder']);
-								chmod($CONFIG['txt_config']['db_folder'], 0777);
+								chmod($CONFIG['txt_config']['db_folder'], $CONFIG['dir_mode']);
 								mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain");
-								chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", 0777);
+								chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", $CONFIG['dir_mode']);
 								mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); 
-								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], 0777);
+								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], $CONFIG['dir_mode']);
 								$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); 
-								chmod($CONFIG['txt_config']['db_folder'] . "/index.html", 0666);
+								chmod($CONFIG['txt_config']['db_folder'] . "/index.html", $CONFIG['file_mode']);
 								$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); 
-								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", 0666);
+								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);
 
 								$forbidden_array = array('ID' => 'forbidden', 'Time_offset' => 10, 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 0, 'Image' => TRUE, 'Protect' => 1, 'Content' => serialize($bin->generateForbiddenSubdomains(TRUE)));
 
@@ -3239,14 +3239,14 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 					if(!$db->write(time(), './INSTALL_LOCK'))
 						echo "<span class=\"error\">Writing Error</span>";
 					else
-						{ echo "<span class=\"success\">Complete</span>"; $stage[] = 1; chmod('./INSTALL_LOCK', 0666); }
+						{ echo "<span class=\"success\">Complete</span>"; $stage[] = 1; chmod('./INSTALL_LOCK', $CONFIG['file_mode']); }
 				echo "</li>"; }
 			echo "</ul>";
 				if(count($stage) > 5)
 				{ $paste_new = array('ID' => $bin->generateRandomString(1), 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 1800, 'Image' => TRUE, 'Protect' => 0, 'Content' => $CONFIG['pb_line_highlight'] . "Congratulations, your pastebin has now been installed!\nThis message will expire in 30 minutes!");
 				$db->insertPaste($paste_new['ID'], $paste_new, TRUE);
 				echo "<div id=\"confirmInstalled\"><a href=\"" . $bin->linker() . "\">Continue</a> to your new installation!<br /></div>";
-				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to 0755.</div>"; }
+				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to $CONFIG['dir_mode'].</div>"; }
 			echo "</div>";
 
 		} else

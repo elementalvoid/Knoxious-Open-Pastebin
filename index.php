@@ -65,8 +65,19 @@ $CONFIG['pb_name'] = FALSE;
 // Pastebin's Tagline (Message under the name/title), FALSE leaves this blank
 $CONFIG['pb_tagline'] = FALSE;
 
+// Hashing algorithm, (Default: MD5)
+// For a full list, consult the function hash_algos();
+$CONFIG['pb_algo'] = "md5";
+# $CONFIG['pb_algo'] = "sha256";
+
 // Pastebin Admin Password, strong one is mucho recommended!
-$CONFIG['pb_pass'] = "password";
+// Should be hashed using the algorithm chosen above
+// Example:
+//   echo '<?php echo hash("md5", "password") . "\n";' | php
+// Then insert the output into the variable below
+# $CONFIG['pb_pass'] = "5f4dcc3b5aa765d61d8327deb882cf99";
+// If a plaintext password is acceptable then use the following
+$CONFIG['pb_pass'] = hash($CONFIG['pb_algo'], "password");
 
 // Pastebin Salts, 4 sequences of random letters and numbers!
 // Please make them at least 6 characters or more!
@@ -74,11 +85,6 @@ $CONFIG['pb_salts'] = array(	1 => "str001",
 				2 => "str002",
 				3 => "str003",
 				4 => "str004");
-
-// Hashing algorithm, NULL or FALSE for MD5 (Default)
-// For a full list, consult the function hash_algos();
-$CONFIG['pb_algo'] = NULL;
-# $CONFIG['pb_algo'] = "sha256";
 
 // Apache/IIS Rewrite enabled? Needs to be like 
 // http://yourdomain.com/id forwards to http://yourdomain.com/index.php?i=id or
@@ -2945,7 +2951,7 @@ elseif($requri != "install" && $db->connect())
 else
 	echo "<!-- No Check is required... -->";
 
-if(@$_POST['adminAction'] == "delete" && $bin->hasher(@$_POST['adminPass'], $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
+if(@$_POST['adminAction'] == "delete" && $bin->hasher(hash($CONFIG['pb_algo'], @$_POST['adminPass']), $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
 	{ $db->dropPaste($requri); echo "<div class=\"success\">Paste, " . $requri . ", has been deleted!</div>"; $requri = NULL; }
 
 if($requri != "install" && @$_POST['submit'])
@@ -3199,7 +3205,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 					<strong>Expires</strong> " . $lifeString . "<br />
 					<strong>Paste size</strong> " . $pasteSize . "</div>";
 
-				if(@$_POST['adminAction'] == "ip" && $bin->hasher(@$_POST['adminPass'], $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
+				if(@$_POST['adminAction'] == "ip" && $bin->hasher(hash($CONFIG['pb_algo'], @$_POST['adminPass']), $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
 					echo "<div class=\"success\"><strong>Author IP Address</strong> <a href=\"http://whois.domaintools.com/" . base64_decode($pasted['IP']) . "\">" . base64_decode($pasted['IP']) . "</a></div>";
 
 				if(!is_bool($pasted['Image']) && !is_numeric($pasted['Image']))
@@ -3393,7 +3399,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				{ echo "<li>Quick password check. ";
 					$passLen = array(8, 9, 10, 11, 12);
 					shuffle($passLen);
-					if(strtolower($CONFIG['pb_pass']) === $bin->hasher("password", $CONFIG['pb_salts']) || !isset($CONFIG['pb_pass']))
+					if($CONFIG['pb_pass'] === $bin->hasher(hash($CONFIG['pb_algo', "password"), $CONFIG['pb_salts']) || !isset($CONFIG['pb_pass']))
 						echo "<span class=\"error\">Password is still default!</span> &nbsp; &raquo; &nbsp; Suggested password: <em>" . $bin->generateRandomString($passLen[0]) . "</em>";
 					else
 						{ echo "<span class=\"success\">Password is not default!</span>"; $stage[] = 1; }

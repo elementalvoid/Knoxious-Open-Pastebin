@@ -1,4 +1,6 @@
 <?php
+if(ISINCLUDED != '1')
+	die('ACCESS DENIED!');
 
 /* Config, please read very carefully. */
 $CONFIG = array();
@@ -224,3 +226,4 @@ $CONFIG['pb_private'] = FALSE;
 
 /* END Config, Nothing more to edit! */
 
+?>

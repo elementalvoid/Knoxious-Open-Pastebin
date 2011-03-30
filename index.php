@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.3
+ *	Knoxious Open Pastebin		 v 1.1.4
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -19,6 +19,8 @@
  *	EXAMPLE: 	http://pzt.me/
  *
  */
+
+define('ISINCLUDED', 1);
 
 require("config.php");
 

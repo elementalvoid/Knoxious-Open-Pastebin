@@ -3165,7 +3165,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 			echo "<ul id=\"installList\">";
 				echo "<li>Checking Directory is writable. ";
 					if(!is_writable($bin->thisDir()))
-						echo "<span class=\"error\">Directory is not writable!</span> - CHMOD to $CONFIG['dir_mode']";
+						echo "<span class=\"error\">Directory is not writable!</span> - CHMOD to ". $CONFIG['dir_mode'];
 					else
 						{ echo "<span class=\"success\">Directory is writable!</span>"; $stage[] = 1; }
 				echo "</li>";
@@ -3246,7 +3246,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				{ $paste_new = array('ID' => $bin->generateRandomString(1), 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 1800, 'Image' => TRUE, 'Protect' => 0, 'Content' => $CONFIG['pb_line_highlight'] . "Congratulations, your pastebin has now been installed!\nThis message will expire in 30 minutes!");
 				$db->insertPaste($paste_new['ID'], $paste_new, TRUE);
 				echo "<div id=\"confirmInstalled\"><a href=\"" . $bin->linker() . "\">Continue</a> to your new installation!<br /></div>";
-				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to $CONFIG['dir_mode'].</div>"; }
+				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to " . $CONFIG['dir_mode'] . ".</div>"; }
 			echo "</div>";
 
 		} else

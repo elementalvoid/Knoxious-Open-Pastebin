@@ -22,11 +22,15 @@ $CONFIG['mysql_connection_config'] = array(
 	'db_existing'	=>	FALSE		/* Reconnect to an existing table? (TRUE or FALSE) */
 );
 
-// If you chose a flatfile connection, please alter these settings!
+// If you are going to host images or are using a flatfile database, change
+// the following to suit your needs. File and directory permissions should
+// work in most cases.
 $CONFIG['txt_config'] = array(
 	'db_folder'	=>	'data'		/* Name of the folder to store Data */,
 	'db_index'	=>	'INDEX'		/* Name of the index file */,
-	'db_images'	=>	'images'	/* Name of the Image folder (stored in Data) */
+	'db_images'	=>	'images'	/* Name of the Image folder (stored in Data) */,
+	'dir_mode'	=>	0775		/* Directory CHMOD */,
+	'file_mode'	=>	0664		/* File CHMOD */
 );
 
 
@@ -218,11 +222,6 @@ $CONFIG['pb_infinity_default'] = FALSE;
 // Enables Private Posting (TRUE or FALSE)
 $CONFIG['pb_private'] = FALSE;
 # $CONFIG['pb_private'] = TRUE;
-
-// File and directory creation modes
-// These defauls should work for most cases
-$CONFIG['file_mode'] = 0664;
-$CONFIG['dir_mode'] = 0775;
 
 // Error reporting? Time Limit? Memory Usage? Why not!
 @error_reporting(E_ALL ^ E_NOTICE);

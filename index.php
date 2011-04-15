@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.5
+ *	Knoxious Open Pastebin		 v 1.1.6
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -2396,8 +2396,8 @@ function sizeFlash() {
 	  name: "_clipboardURI"
 	};
 
-	swfobject.embedSWF("_clipboard.swf", "_clipboard_replace", divWidth, divHeightURL, "10.0.0", "expressInstall.swf", flashvars, params, attributes);
-	swfobject.embedSWF("_clipboard.swf", "_clipboardURI_replace", divWidthURL, divHeightURL, "10.0.0", "expressInstall.swf", flashvarsURI, paramsURI, attributesURI);
+	swfobject.embedSWF("<?php echo $CONFIG['pb_clipboard']; ?>", "_clipboard_replace", divWidth, divHeightURL, "10.0.0", "expressInstall.swf", flashvars, params, attributes);
+	swfobject.embedSWF("<?php echo $CONFIG['pb_clipboard']; ?>", "_clipboardURI_replace", divWidthURL, divHeightURL, "10.0.0", "expressInstall.swf", flashvarsURI, paramsURI, attributesURI);
 
 	repositionFlash("_clipboard", "_copyText");
 	repositionFlash("_clipboardURI", "_copyURL");

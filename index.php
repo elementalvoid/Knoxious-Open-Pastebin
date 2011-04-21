@@ -1837,7 +1837,7 @@ if($requri == "api")
 							$pasted = $pasted[0];
 
 						if(strlen($pasted['Image']) > 3)
-							$pasted['Image_path'] = $bin->linker() . $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/" . $pasted['Image'];
+							$pasted['Image_path'] = $bin->linker() . $db->setDataPath($pasted['Image']);
 
 						$JSON = '
 								{

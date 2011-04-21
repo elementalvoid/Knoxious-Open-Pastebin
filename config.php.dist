@@ -218,7 +218,6 @@ $CONFIG['pb_infinity'] = FALSE;
 $CONFIG['pb_infinity_default'] = FALSE;
 # $CONFIG['pb_infinity_default'] = TRUE;
 
-
 // Enables Private Posting (TRUE or FALSE)
 $CONFIG['pb_private'] = FALSE;
 # $CONFIG['pb_private'] = TRUE;

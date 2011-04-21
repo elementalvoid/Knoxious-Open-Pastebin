@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.6
+ *	Knoxious Open Pastebin		 v 1.1.7
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -1462,7 +1462,7 @@ if(file_exists('./INSTALL_LOCK') && @$_POST['subdomain'] && $CONFIG['pb_subdomai
 		if($seed)
 			header("Location: " . str_replace("http://", "http://" . $seed . ".", $bin->linker()));
 		else
-			header("Location: " . $bin->linker());
+			$error_subdomain = TRUE;	
 	}
 
 $CONFIG['subdomain'] = $bin->setSubdomain();
@@ -2731,6 +2731,9 @@ else
 
 if(@$_POST['adminAction'] == "delete" && $bin->hasher(hash($CONFIG['pb_algo'], @$_POST['adminPass']), $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
 	{ $db->dropPaste($requri); echo "<div class=\"success\">Paste, " . $requri . ", has been deleted!</div>"; $requri = NULL; }
+
+if(@$_POST['subdomain'] && $error_subdomain)
+	die("<div class=\"result\"><div class=\"error\">Subdomain invalid or already taken!</div></div></div></body></html>");
 
 if($requri != "install" && @$_POST['submit'])
 	{

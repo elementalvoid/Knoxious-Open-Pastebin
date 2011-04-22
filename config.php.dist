@@ -108,18 +108,18 @@ $CONFIG['pb_id_length'] = 1;
 // This allows Javascript frameworks like jQuery to perform cross-domain AJAX.
 // Example code: http://knoxious.co.uk/Sharpshooter
 $CONFIG['pb_api_adaptor'] = FALSE;
-# $CONFIG['pb_api_adaptor'] = "/path/to/adaptor.php";
+# $CONFIG['pb_api_adaptor'] = "path/to/adaptor.php";
 
 // Use alternate Pastebin stylesheet, FALSE uses default
 // Note that URLs are accepted!
 $CONFIG['pb_style'] = FALSE;
-# $CONFIG['pb_style'] = "/path/to/sheet.css";
+# $CONFIG['pb_style'] = "path/to/sheet.css";
 
 // Use Syntax Highlighting
 // This requires GeSHI
 // http://qbnz.com/highlighter/index.php
 $CONFIG['pb_syntax'] = FALSE;
-# $CONFIG['pb_syntax'] = "/path/to/geshi.php";
+# $CONFIG['pb_syntax'] = "path/to/geshi.php";
 
 // Enable Line Highlighting
 // Looks for a 2-6 character long highlight string, FALSE for Disabled.
@@ -136,13 +136,13 @@ $CONFIG['pb_line_highlight_style'] = FALSE;
 // jQuery adds tiger-stripes, effects, AJAX and resize textbox
 // Note that URLs are accepted!
 $CONFIG['pb_jQuery'] = FALSE;
-# $CONFIG['pb_jQuery'] = "/path/to/jQuery.js";
+# $CONFIG['pb_jQuery'] = "path/to/jQuery.js";
 
 // Path to _clipboard.swf (allows copying)
 // http://knoxious.co.uk/Knoxious+Pastebin/index.html#_clipboard
 // Note that swfobject.js is also required in the same Directory
 $CONFIG['pb_clipboard'] = FALSE;
-# $CONFIG['pb_clipboard'] = "/path/to/_clipboard.swf";
+# $CONFIG['pb_clipboard'] = "path/to/_clipboard.swf";
 
 // Date Format (see PHP.net's entry on date();)
 $CONFIG['pb_datetime'] = "Y-m-d H:i:s";
@@ -186,7 +186,7 @@ $CONFIG['pb_video'] = FALSE;
 // Enable FlowPlayer for playing .flv files? (Path or FALSE) Can be a URL.
 // http://flowplayer.org
 $CONFIG['pb_flowplayer'] = FALSE;
-# $CONFIG['pb_flowplayer'] = "/path/to/flowplayer.swf";
+# $CONFIG['pb_flowplayer'] = "path/to/flowplayer.swf";
 
 // Embedded Video Size (in Pixels)
 $CONFIG['pb_video_size'] = array('width' => 600, 'height' => 338);

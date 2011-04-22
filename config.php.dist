@@ -57,13 +57,14 @@ $CONFIG['pb_algo'] = "md5";
 # $CONFIG['pb_algo'] = "sha256";
 
 // Pastebin Admin Password, strong one is mucho recommended!
-// Should be hashed using the algorithm chosen above
-// Example:
-//   echo '<?php echo hash("md5", "password") . "\n";' | php
-// Then insert the output into the variable below
-# $CONFIG['pb_pass'] = "5f4dcc3b5aa765d61d8327deb882cf99";
 // If a plaintext password is acceptable then use the following
 $CONFIG['pb_pass'] = hash($CONFIG['pb_algo'], "password");
+// Storing plaintext passwords is not recommended.
+// You should consider a hashed password using the algorithm chosen above
+// Example:
+//   <?php echo hash("md5", "password") . "\n"; ?>
+// Then insert the output into the variable below and uncomment
+# $CONFIG['pb_pass'] = "5f4dcc3b5aa765d61d8327deb882cf99";
 
 // Pastebin Salts, 4 sequences of random letters and numbers!
 // Please make them at least 6 characters or more!

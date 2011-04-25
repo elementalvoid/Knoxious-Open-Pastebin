@@ -3174,7 +3174,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						$subdomain_action = $bin->linker();
 					}
 					
-				$subdomainForm = "<div id=\"subdomainForm\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form></div><div class=\"spacer\">&nbsp;</div>";
+				$subdomainForm = "<div id=\"subdomainForm\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form><div class=\"spacer\">&nbsp;</div></div>";
 
 				if(strlen($bin->linker()) < 16)
 					$isShortURL = " If your text is a URL, the pastebin will recognize it and will create a Short URL forwarding page! (Like bit.ly, is.gd, etc)";

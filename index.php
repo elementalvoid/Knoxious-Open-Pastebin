@@ -1978,6 +1978,7 @@ if($requri != "install")
 				#showAdminFunctions { font-size: xx-small; font-weight: bold; text-align: center; }
 				#hiddenAdmin { display: none; padding-right: 10px; }
 				#instructions { display: none; }
+				#subdomainForm { display: none; }
 				#serviceList li { margin-top: 7px; margin-bottom: 7px; list-style: square; }
 				#authorContainer { width: 48%; float: left; margin-bottom: 10px;  }
 				#authorContainerReply { padding-right: 52%; margin-bottom: 10px;  }
@@ -2105,10 +2106,22 @@ if($requri != "install")
 					return false;
 				}
 
-				function showInstructions(){
-					$('#showInstructions').hide(500);
-					$('#instructions').show(500);
+				function toggleInstructions(){
+					$('#instructions').slideToggle(500, function(){});
 					return false;
+				}
+
+				function hideInstructions(){
+					$('#instructions').hide(500);
+				}
+
+				function toggleSubdomainForm(){
+					$('#subdomainForm').slideToggle(500, function(){});
+					return false;
+				}
+
+				function hideSubdomainForm(){
+					$('#subdomainForm').hide(500);
 				}
 
 				function toggleWrap(){
@@ -2530,9 +2543,30 @@ function showAdminTools(hideMe){
 	document.getElementById('hiddenAdmin').style.display = "block";
 	return false;
 }
-function showInstructions(){
-	document.getElementById('showInstructions').style.display = "none";
-	document.getElementById('instructions').style.display = "block";
+
+function toggleInstructions(){
+	if (document.getElementById('instructions').style.display == "block")
+		document.getElementById('instructions').style.display = "none";
+	else
+		document.getElementById('instructions').style.display = "block";
+	return false;
+}
+
+function hideInstructions(){
+	document.getElementById('instructions').style.display = "none";
+	return false;
+}
+
+function toggleSubdomainForm(){
+	if (document.getElementById('subdomainForm').style.display == "block")
+		document.getElementById('subdomainForm').style.display = "none";
+	else
+		document.getElementById('subdomainForm').style.display = "block";
+	return false;
+}
+
+function hideSubdomainForm(){
+	document.getElementById('subdomainForm').style.display = "none";
 	return false;
 }
 
@@ -2657,9 +2691,30 @@ function showAdminTools(hideMe){
 	document.getElementById('hiddenAdmin').style.display = "block";
 	return false;
 }
-function showInstructions(){
-	document.getElementById('showInstructions').style.display = "none";
-	document.getElementById('instructions').style.display = "block";
+
+function toggleInstructions(){
+	if (document.getElementById('instructions').style.display == "block")
+		document.getElementById('instructions').style.display = "none";
+	else
+		document.getElementById('instructions').style.display = "block";
+	return false;
+}
+
+function hideInstructions(){
+	document.getElementById('instructions').style.display = "none";
+	return false;
+}
+
+function toggleSubdomainForm(){
+	if (document.getElementById('subdomainForm').style.display == "block")
+		document.getElementById('subdomainForm').style.display = "none";
+	else
+		document.getElementById('subdomainForm').style.display = "block";
+	return false;
+}
+
+function hideSubdomainForm(){
+	document.getElementById('subdomainForm').style.display = "none";
 	return false;
 }
 
@@ -3257,11 +3312,6 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 			echo "</div>";
 		} else
 			{
-				if($CONFIG['pb_subdomains'])
-					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">make a subdomain</a> ]";
-				else
-					$subdomainClicker = NULL;
-
 				if($CONFIG['subdomain'])
 					{
 						$domain_name = str_replace(array("http://", $CONFIG['subdomain'] . ".", "www."), "", $bin->linker());
@@ -3272,8 +3322,15 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						$domain_name = str_replace(array("http://", "www."), "", $bin->linker());
 						$subdomain_action = $bin->linker();
 					}
-					
-				$subdomainForm = "<form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form>";
+
+				if($CONFIG['pb_subdomains'])
+				{
+					$subdomainClicker = " [ <a href=\"#\" onclick=\"hideInstructions(); return toggleSubdomainForm();\">make a subdomain</a> ]<div id=\"subdomainForm\" class=\"subdomainForm\" style=\"display: none\"><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form></div>";
+				}
+				else
+				{
+					$subdomainClicker = NULL;
+				}
 
 				if(strlen($bin->linker()) < 16)
 					$isShortURL = " If your text is a URL, the pastebin will recognize it and will create a Short URL forwarding page! (Like bit.ly, is.gd, etc)";
@@ -3315,7 +3372,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 					$service['url'] = array('style' => 'error', 'status' => 'Disabled', 'tip' => NULL, 'str' => NULL);
 
 				if($CONFIG['pb_subdomains'])
-					$service['subdomains'] = array('style' => 'success', 'status' => 'Enabled', 'tip' => $subdomainForm);
+					$service['subdomains'] = array('style' => 'success', 'status' => 'Enabled', 'tip' => NULL);
 				else
 					$service['subdomains'] = array('style' => 'error', 'status' => 'Disabled', 'tip' => NULL);
 
@@ -3360,11 +3417,12 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				echo "<div id=\"pastebin\" class=\"pastebin\">"
 				. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
 				$bin->setTagline($CONFIG['pb_tagline'])
-				. "<div id=\"result\">&nbsp;</div>
-				<div id=\"formContainer\">
-				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains " . $service['subdomains']['tip'] . "</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
+				. "<div id=\"formContainer\">
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">
-						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]" . $subdomainClicker . "</span></label><br />
+						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . "</span></label>
+						[ <a href=\"#\" onclick=\"hideSubdomainForm(); return toggleInstructions();\">more info</a> ]
+						$subdomainClicker
+						<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains " . $service['subdomains']['tip'] . "</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\"></textarea></div>
 						<div id=\"foundURL\" style=\"display: none;\">URL has been detected...</div>
 						<div class=\"spacer\">&nbsp;</div>

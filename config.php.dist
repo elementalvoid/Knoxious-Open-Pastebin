@@ -62,7 +62,7 @@ $CONFIG['pb_pass'] = hash($CONFIG['pb_algo'], "password");
 // Storing plaintext passwords is not recommended.
 // You should consider a hashed password using the algorithm chosen above
 // Example:
-//   <?php echo hash("md5", "password") . "\n"; ?>
+//   echo hash("md5", "password") . "\n";
 // Then insert the output into the variable below and uncomment
 # $CONFIG['pb_pass'] = "5f4dcc3b5aa765d61d8327deb882cf99";
 

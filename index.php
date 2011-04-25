@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.7
+ *	Knoxious Open Pastebin		 v 1.1.8
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -2855,9 +2855,8 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 	{
 		echo "<div id=\"recentPosts\" class=\"recentPosts\">";
 		$recentPosts = $bin->getLastPosts($CONFIG['pb_recent_posts']);
+		echo "<h2 id=\"newPaste\"><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
 		if($requri || count($recentPosts) > 0)
-			echo "<h2 id=\"newPaste\"><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
-
 			if(count($recentPosts) > 0)
 				{					
 					echo "<h2>Recent Pastes</h2>";	

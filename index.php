@@ -2910,44 +2910,40 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 	{
 		echo "<div id=\"recentPosts\" class=\"recentPosts\">";
 		$recentPosts = $bin->getLastPosts($CONFIG['pb_recent_posts']);
-		if($requri || count($recentPosts) > 0)
-			echo "<h2 id=\"newPaste\"><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
+			echo "<h2 id=\"newPaste\"><a href=\"" . $bin->linker() . "\">New Paste</a></h2>";
 
-			if(count($recentPosts) > 0)
-				{					
-					echo "<h2>Recent Pastes</h2>";	
-					echo "<ul id=\"postList\" class=\"recentPosts\">";					
-					foreach($recentPosts as $paste_) {
-						$rel = NULL;
+			echo "<h2>Recent Pastes</h2>";
+			echo "<ul id=\"postList\" class=\"recentPosts\">";
+			foreach($recentPosts as $paste_) {
+				$rel = NULL;
+				$exclam = NULL;
+				if($paste_['URL'] != NULL && $CONFIG['pb_url'] && !$bin->generateVideoEmbedCode($paste_['URL'])) {
+					$exclam = "!";
+					$rel = " rel=\"link\"";
+				}
+
+				if(!is_bool($paste_['Image']) && !is_numeric($paste_['Image']) && $paste_['Image'] != NULL && $CONFIG['pb_images']) {
+					if($CONFIG['pb_media_warn'])
+						$exclam = "!";
+					else
 						$exclam = NULL;
-						if($paste_['URL'] != NULL && $CONFIG['pb_url'] && !$bin->generateVideoEmbedCode($paste_['URL'])) {
-							$exclam = "!";
-							$rel = " rel=\"link\"";
-						}
 
-						if(!is_bool($paste_['Image']) && !is_numeric($paste_['Image']) && $paste_['Image'] != NULL && $CONFIG['pb_images']) {
-							if($CONFIG['pb_media_warn'])
-								$exclam = "!";
-							else
-								$exclam = NULL;
+					$rel = " rel=\"image\"";
+				}
 
-							$rel = " rel=\"image\"";
-						}
+				if($paste_['Video'] != NULL && $CONFIG['pb_video'] && $bin->generateVideoEmbedCode($paste_['URL'])) {
+					if($CONFIG['pb_media_warn'])
+						$exclam = "!";
+					else
+						$exclam = NULL;
 
-						if($paste_['Video'] != NULL && $CONFIG['pb_video'] && $bin->generateVideoEmbedCode($paste_['URL'])) {
-							if($CONFIG['pb_media_warn'])
-								$exclam = "!";
-							else
-								$exclam = NULL;
+					$rel = " rel=\"video\"";
+				}
 
-							$rel = " rel=\"video\"";
-						}
+				echo "<li id=\"" . $paste_['ID'] . "\" class=\"postItem\"><a href=\"" . $bin->linker($paste_['ID']) . $exclam . "\"" . $rel . ">" . stripslashes($paste_['Author']) . "</a><br />" . $bin->event($paste_['Datetime']) . " ago.</li>";
+			}
+			echo "</ul>";
 
-						echo "<li id=\"" . $paste_['ID'] . "\" class=\"postItem\"><a href=\"" . $bin->linker($paste_['ID']) . $exclam . "\"" . $rel . ">" . stripslashes($paste_['Author']) . "</a><br />" . $bin->event($paste_['Datetime']) . " ago.</li>";
-					}
-					echo "</ul>";
-				} else
-					echo "&nbsp;";
 			if($requri)
 				{
 					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
@@ -2970,7 +2966,7 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 			if($requri && $requri != "install" && substr($requri, -1) != "!")
 				{
 					echo "<div id=\"recentPosts\" class=\"recentPosts\">";
-					echo "<h2><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
+					echo "<h2><a href=\"" . $bin->linker() . "\">New Paste</a></h2>";
 					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
 					echo "<div id=\"adminFunctions\">
 							<form id=\"adminForm\" action=\"" . $bin->linker($requri) . "\" method=\"post\">
@@ -2992,9 +2988,8 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 	{
 		$pasteinfo['Parent'] = $requri;
 		echo "<div id=\"pastebin\" class=\"pastebin\">"
-			. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
-			$bin->setTagline($CONFIG['pb_tagline'])
-			. "<div id=\"result\">&nbsp;</div>";
+			. "<h1>" . $bin->setTitle($CONFIG['pb_name']) . "</h1>"
+			. $bin->setTagline($CONFIG['pb_tagline']);
 
 		if($pasted = $db->readPaste($requri))
 			{

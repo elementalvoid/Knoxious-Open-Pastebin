@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.8
+ *	Knoxious Open Pastebin		 v 1.1.9
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -1958,6 +1958,7 @@ if($requri != "install")
 				.infoMessage { padding: 25px; font-size: medium; max-width: 800px; }
 				.lineHighlight { background-color: #FFFFAA; font-weight: bolder; color: #000000; }
 				.resizehandle {	background: #F0F0F0 scroll 45%; cursor: s-resize; text-align: center; color: #AAAAAA; height: 16px; width: 100%; } 
+				.pasteEnterLabel { width: 80%; display: block; }
 				#newPaste { text-align: center; border-bottom: 1px dotted #CCCCCC; padding-bottom: 10px; }
 				#lineNumbers { width: 100%; max-height: 500px; background-color: #FFFFFF; overflow: auto; padding: 0; margin: 0; }
 				div#siteWrapper { width: 100%; margin: 0 auto; }
@@ -1978,6 +1979,7 @@ if($requri != "install")
 				#showAdminFunctions { font-size: xx-small; font-weight: bold; text-align: center; }
 				#hiddenAdmin { display: none; padding-right: 10px; }
 				#instructions { display: none; }
+				#subdomainForm { display: none; }
 				#serviceList li { margin-top: 7px; margin-bottom: 7px; list-style: square; }
 				#authorContainer { width: 48%; float: left; margin-bottom: 10px;  }
 				#authorContainerReply { padding-right: 52%; margin-bottom: 10px;  }
@@ -2032,7 +2034,131 @@ if($requri != "install")
 		<?php
 			}
 
-		/* begin JS */
+			/* begin JS */
+
+			$_commonJS = "/* AJAXIAN */
+var tab = \"    \";
+       
+function catchTab(evt) {
+    var t = evt.target;
+    var ss = t.selectionStart;
+    var se = t.selectionEnd;
+ 
+    if (evt.keyCode == 9) {
+        evt.preventDefault();
+               
+        if (ss != se && t.value.slice(ss,se).indexOf(\"\\n\") != -1) {
+            var pre = t.value.slice(0,ss);
+            var sel = t.value.slice(ss,se).replace(/\\n/g,\"\\n\"+tab);
+            var post = t.value.slice(se,t.value.length);
+            t.value = pre.concat(tab).concat(sel).concat(post);
+                   
+            t.selectionStart = ss + tab.length;
+            t.selectionEnd = se + tab.length;
+        }
+               
+        else {
+            t.value = t.value.slice(0,ss).concat(tab).concat(t.value.slice(ss,t.value.length));
+            if (ss == se) {
+                t.selectionStart = t.selectionEnd = ss + tab.length;
+            }
+            else {
+                t.selectionStart = ss + tab.length;
+                t.selectionEnd = se + tab.length;
+            }
+        }
+    }
+           
+   else if (evt.keyCode==8 && t.value.slice(ss - 4,ss) == tab) {
+        evt.preventDefault();
+               
+        t.value = t.value.slice(0,ss - 4).concat(t.value.slice(ss,t.value.length));
+        t.selectionStart = t.selectionEnd = ss - tab.length;
+    }
+           
+    else if (evt.keyCode==46 && t.value.slice(se,se + 4) == tab) {
+        evt.preventDefault();
+             
+        t.value = t.value.slice(0,ss).concat(t.value.slice(ss + 4,t.value.length));
+        t.selectionStart = t.selectionEnd = ss;
+    }
+
+    else if (evt.keyCode == 37 && t.value.slice(ss - 4,ss) == tab) {
+        evt.preventDefault();
+        t.selectionStart = t.selectionEnd = ss - 4;
+    }
+    else if (evt.keyCode == 39 && t.value.slice(ss,ss + 4) == tab) {
+        evt.preventDefault();
+        t.selectionStart = t.selectionEnd = ss + 4;
+    }
+}
+
+function showAdminTools(hideMe){
+	document.getElementById('showAdminFunctions').style.display = \"none\";
+	document.getElementById('hiddenAdmin').style.display = \"block\";
+	return false;
+}
+
+function showInstructions(){
+	document.getElementById('showInstructions').style.display = \"none\";
+	document.getElementById('instructions').style.display = \"block\";
+	return false;
+}
+
+function showSubdomain(){
+	document.getElementById('showSubdomain').style.display = \"none\";
+	document.getElementById('subdomainForm').style.display = \"block\";
+	return false;
+}
+
+function toggleWrap() {
+	var n = 0;
+	var pres = document.getElementsByTagName('pre');
+
+	for(n in pres)
+		{
+			if(pres[n].style != null && (pres[n].style.whiteSpace == \"pre\" || pres[n].style.whiteSpace == \"\")) {
+					pres[n].style.whiteSpace = \"pre-wrap\";
+			}
+			else if(pres[n].style != null) {
+				pres[n].style.whiteSpace = \"pre\";
+			}
+		}
+
+	return false;
+}
+
+function toggleExpand() {
+	if(document.getElementById('lineNumbers').style.maxHeight != \"none\") {
+			document.getElementById('lineNumbers').style.maxHeight = \"none\";
+			document.getElementById('lineNumbers').style.width = \"auto\";
+	}
+	else {
+		document.getElementById('lineNumbers').setAttribute('style', '');
+	}
+	return false;
+}
+
+function toggleStyle(){
+	if(document.getElementById('orderedList').getAttribute('class') == \"monoText\" || document.getElementById('orderedList').getAttribute('class') == \"\")
+		document.getElementById('orderedList').setAttribute(\"class\", \"plainText\");
+	else
+		document.getElementById('orderedList').setAttribute(\"class\", \"monoText\");
+	return false;
+}
+
+function submitPaste(targetButton) {
+	var disabledButton = document.createElement('input');
+	var parentContainer = document.getElementById('submitContainer');
+	disabledButton.setAttribute('value', 'Posting...');
+	disabledButton.setAttribute('type', 'button');
+	disabledButton.setAttribute('disabled', 'disabled');
+	disabledButton.setAttribute('id', 'dummyButton');
+	targetButton.style.display = \"none\";
+	parentContainer.appendChild(disabledButton);
+	return true;
+}";
+
 			if($bin->jQuery())
 				{ echo "<script type=\"text/javascript\" src=\"" . $CONFIG['pb_jQuery'] . "\"></script>";
 
@@ -2110,6 +2236,13 @@ if($requri != "install")
 					$('#instructions').show(500);
 					return false;
 				}
+
+				function showSubdomain(){
+					$('#showSubdomain').hide(500);
+					$('#subdomainForm').show(500);
+					return false;
+				}
+
 
 				function toggleWrap(){
 					if($('pre').css('white-space') == "pre")
@@ -2430,124 +2563,9 @@ function checkIfURL(checkMe){
 function checkIfURL(checkMe){
 	return false;
 }
-<?php } ?>
+<?php } 
 
-/* AJAXIAN */
-var tab = "	";
-       
-function catchTab(evt) {
-    var t = evt.target;
-    var ss = t.selectionStart;
-    var se = t.selectionEnd;
- 
-    if (evt.keyCode == 9) {
-        evt.preventDefault();
-               
-        if (ss != se && t.value.slice(ss,se).indexOf("\n") != -1) {
-            var pre = t.value.slice(0,ss);
-            var sel = t.value.slice(ss,se).replace(/\n/g,"\n"+tab);
-            var post = t.value.slice(se,t.value.length);
-            t.value = pre.concat(tab).concat(sel).concat(post);
-                   
-            t.selectionStart = ss + tab.length;
-            t.selectionEnd = se + tab.length;
-        }
-               
-        else {
-            t.value = t.value.slice(0,ss).concat(tab).concat(t.value.slice(ss,t.value.length));
-            if (ss == se) {
-                t.selectionStart = t.selectionEnd = ss + tab.length;
-            }
-            else {
-                t.selectionStart = ss + tab.length;
-                t.selectionEnd = se + tab.length;
-            }
-        }
-    }
-           
-   else if (evt.keyCode==8 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-               
-        t.value = t.value.slice(0,ss - 4).concat(t.value.slice(ss,t.value.length));
-        t.selectionStart = t.selectionEnd = ss - tab.length;
-    }
-           
-    else if (evt.keyCode==46 && t.value.slice(se,se + 4) == tab) {
-        evt.preventDefault();
-             
-        t.value = t.value.slice(0,ss).concat(t.value.slice(ss + 4,t.value.length));
-        t.selectionStart = t.selectionEnd = ss;
-    }
-
-    else if (evt.keyCode == 37 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss - 4;
-    }
-    else if (evt.keyCode == 39 && t.value.slice(ss,ss + 4) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss + 4;
-    }
-}
-
-function toggleWrap() {
-	var n = 0;
-	var pres = document.getElementsByTagName('pre');
-
-	for(n in pres)
-		{
-			if(pres[n].style != null && (pres[n].style.whiteSpace == "pre" || pres[n].style.whiteSpace == "")) {
-					pres[n].style.whiteSpace = "pre-wrap";
-			}
-			else if(pres[n].style != null) {
-				pres[n].style.whiteSpace = "pre";
-			}
-		}
-
-	return false;
-}
-
-function toggleExpand() {
-	if(document.getElementById('lineNumbers').style.maxHeight != "none") {
-			document.getElementById('lineNumbers').style.maxHeight = "none";
-			document.getElementById('lineNumbers').style.width = "auto";
-	}
-	else {
-		document.getElementById('lineNumbers').setAttribute('style', '');
-	}
-	return false;
-}
-
-function toggleStyle(){
-	if(document.getElementById('orderedList').getAttribute('class') == "monoText" || document.getElementById('orderedList').getAttribute('class') == "")
-		document.getElementById('orderedList').setAttribute("class", "plainText");
-	else
-		document.getElementById('orderedList').setAttribute("class", "monoText");
-	return false;
-}
-
-function showAdminTools(hideMe){
-	document.getElementById('showAdminFunctions').style.display = "none";
-	document.getElementById('hiddenAdmin').style.display = "block";
-	return false;
-}
-function showInstructions(){
-	document.getElementById('showInstructions').style.display = "none";
-	document.getElementById('instructions').style.display = "block";
-	return false;
-}
-
-function submitPaste(targetButton) {
-	var disabledButton = document.createElement('input');
-	var parentContainer = document.getElementById('submitContainer');
-	disabledButton.setAttribute('value', 'Posting...');
-	disabledButton.setAttribute('type', 'button');
-	disabledButton.setAttribute('disabled', 'disabled');
-	disabledButton.setAttribute('id', 'dummyButton');
-	targetButton.style.display = "none";
-	parentContainer.appendChild(disabledButton);
-	return true;
-}
-
+echo $_commonJS; ?>
 
 <?php } ?>
 
@@ -2593,123 +2611,7 @@ function checkIfURL(checkMe){
 function checkIfURL(checkMe){
 	return true;
 }
-<?php } ?>
-
-/* AJAXIAN */
-var tab = "    ";
-       
-function catchTab(evt) {
-    var t = evt.target;
-    var ss = t.selectionStart;
-    var se = t.selectionEnd;
- 
-    if (evt.keyCode == 9) {
-        evt.preventDefault();
-               
-        if (ss != se && t.value.slice(ss,se).indexOf("\n") != -1) {
-            var pre = t.value.slice(0,ss);
-            var sel = t.value.slice(ss,se).replace(/\n/g,"\n"+tab);
-            var post = t.value.slice(se,t.value.length);
-            t.value = pre.concat(tab).concat(sel).concat(post);
-                   
-            t.selectionStart = ss + tab.length;
-            t.selectionEnd = se + tab.length;
-        }
-               
-        else {
-            t.value = t.value.slice(0,ss).concat(tab).concat(t.value.slice(ss,t.value.length));
-            if (ss == se) {
-                t.selectionStart = t.selectionEnd = ss + tab.length;
-            }
-            else {
-                t.selectionStart = ss + tab.length;
-                t.selectionEnd = se + tab.length;
-            }
-        }
-    }
-           
-   else if (evt.keyCode==8 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-               
-        t.value = t.value.slice(0,ss - 4).concat(t.value.slice(ss,t.value.length));
-        t.selectionStart = t.selectionEnd = ss - tab.length;
-    }
-           
-    else if (evt.keyCode==46 && t.value.slice(se,se + 4) == tab) {
-        evt.preventDefault();
-             
-        t.value = t.value.slice(0,ss).concat(t.value.slice(ss + 4,t.value.length));
-        t.selectionStart = t.selectionEnd = ss;
-    }
-
-    else if (evt.keyCode == 37 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss - 4;
-    }
-    else if (evt.keyCode == 39 && t.value.slice(ss,ss + 4) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss + 4;
-    }
-}
-
-function showAdminTools(hideMe){
-	document.getElementById('showAdminFunctions').style.display = "none";
-	document.getElementById('hiddenAdmin').style.display = "block";
-	return false;
-}
-function showInstructions(){
-	document.getElementById('showInstructions').style.display = "none";
-	document.getElementById('instructions').style.display = "block";
-	return false;
-}
-
-function toggleWrap() {
-	var n = 0;
-	var pres = document.getElementsByTagName('pre');
-
-	for(n in pres)
-		{
-			if(pres[n].style != null && (pres[n].style.whiteSpace == "pre" || pres[n].style.whiteSpace == "")) {
-					pres[n].style.whiteSpace = "pre-wrap";
-			}
-			else if(pres[n].style != null) {
-				pres[n].style.whiteSpace = "pre";
-			}
-		}
-
-	return false;
-}
-
-function toggleExpand() {
-	if(document.getElementById('lineNumbers').style.maxHeight != "none") {
-			document.getElementById('lineNumbers').style.maxHeight = "none";
-			document.getElementById('lineNumbers').style.width = "auto";
-	}
-	else {
-		document.getElementById('lineNumbers').setAttribute('style', '');
-	}
-	return false;
-}
-
-function toggleStyle(){
-	if(document.getElementById('orderedList').getAttribute('class') == "monoText" || document.getElementById('orderedList').getAttribute('class') == "")
-		document.getElementById('orderedList').setAttribute("class", "plainText");
-	else
-		document.getElementById('orderedList').setAttribute("class", "monoText");
-	return false;
-}
-
-function submitPaste(targetButton) {
-	var disabledButton = document.createElement('input');
-	var parentContainer = document.getElementById('submitContainer');
-	disabledButton.setAttribute('value', 'Posting...');
-	disabledButton.setAttribute('type', 'button');
-	disabledButton.setAttribute('disabled', 'disabled');
-	disabledButton.setAttribute('id', 'dummyButton');
-	targetButton.style.display = "none";
-	parentContainer.appendChild(disabledButton);
-	return true;
-}
+<?php } echo $_commonJS; ?>
 
 </script>
 <?php
@@ -3038,7 +2940,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				if($CONFIG['pb_editing']) {
 				echo "<div id=\"formContainer\">
 					<form id=\"pasteForm\" name=\"pasteForm\" action=\"" . $bin->linker($pasted['ID']) . "\" method=\"post\">
-						<div><label for=\"pasteEnter\">Edit this post! " . $lineHighlight . "</label><br />
+						<div><label for=\"pasteEnter\" class=\"pasteEnterLabel\">Edit this post! " . $lineHighlight . "</label>
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\">" . $pasted['Data']['noHighlight']['Dirty'] . "</textarea></div>
 						<div id=\"foundURL\" style=\"display: none;\">URL has been detected...</div>
 						<div class=\"spacer\">&nbsp;</div>";
@@ -3257,7 +3159,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 		} else
 			{
 				if($CONFIG['pb_subdomains'])
-					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">make a subdomain</a> ]";
+					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showSubdomain();\">make a subdomain</a> ]";
 				else
 					$subdomainClicker = NULL;
 
@@ -3272,7 +3174,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						$subdomain_action = $bin->linker();
 					}
 					
-				$subdomainForm = "<form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form>";
+				$subdomainForm = "<div id=\"subdomainForm\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form></div><div class=\"spacer\">&nbsp;</div>";
 
 				if(strlen($bin->linker()) < 16)
 					$isShortURL = " If your text is a URL, the pastebin will recognize it and will create a Short URL forwarding page! (Like bit.ly, is.gd, etc)";
@@ -3361,9 +3263,9 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				$bin->setTagline($CONFIG['pb_tagline'])
 				. "<div id=\"result\">&nbsp;</div>
 				<div id=\"formContainer\">
-				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains " . $service['subdomains']['tip'] . "</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
+				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>" . $service['subdomains']['tip'] . "
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">
-						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]" . $subdomainClicker . "</span></label><br />
+						<div><label for=\"pasteEnter\" class=\"pasteEnterLabel\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]</span><span id=\"showSubdomain\">" . $subdomainClicker . "</span></label>
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\"></textarea></div>
 						<div id=\"foundURL\" style=\"display: none;\">URL has been detected...</div>
 						<div class=\"spacer\">&nbsp;</div>

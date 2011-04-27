@@ -2408,6 +2408,7 @@ function submitPaste(targetButton) {
         							$('#result').prepend('<div class="success">Your paste has been successfully recorded!</div><div class="confirmURL">URL to your paste is <a href="' + msg.url + '">' + msg.url + '</a></div>');
 										}
 
+								document.getElementById('formContainer').style.display = "none";
 								window.scrollTo(0,0); 
      							 },
 							error: function(msg) {

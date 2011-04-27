@@ -1979,6 +1979,7 @@ if($requri != "install")
 				#showAdminFunctions { font-size: xx-small; font-weight: bold; text-align: center; }
 				#hiddenAdmin { display: none; padding-right: 10px; }
 				#instructions { display: none; }
+				#tagline { margin-bottom: 10px; }
 				#subdomainForm { display: none; }
 				#serviceList li { margin-top: 7px; margin-bottom: 7px; list-style: square; }
 				#authorContainer { width: 48%; float: left; margin-bottom: 10px;  }

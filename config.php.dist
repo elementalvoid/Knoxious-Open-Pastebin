@@ -104,6 +104,10 @@ $CONFIG['pb_api'] = FALSE;
 $CONFIG['pb_id_length'] = 1;
 # $CONFIG['pb_id_length'] = 5;
 
+// Hexlike IDs (only uses numbers 0-9, letters a-f)
+$CONFIG['pb_hexlike_id'] = FALSE;
+# $CONFIG['pb_hexlike_id'] = TRUE;
+
 // Server side API Adaptor?
 // This allows Javascript frameworks like jQuery to perform cross-domain AJAX.
 // Example code: http://knoxious.co.uk/Sharpshooter

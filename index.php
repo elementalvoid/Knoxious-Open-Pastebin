@@ -953,9 +953,12 @@ class bin
 
 		public function generateRandomString($length)
 			{
-				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo', 'subdomain', 'forbidden');
+				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo', 'subdomain', 'forbidden', 0);
 
-				$characters = "123456789abcdefghijklmnopqrstuvwxyz";  
+				$characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+			      	if($this->db->config['pb_hexlike_id'])
+					$characters = "0123456789abcdef";
+
 				$output = "";
 					for ($p = 0; $p < $length; $p++) {
 						$output .= $characters[mt_rand(0, strlen($characters))];

@@ -957,7 +957,7 @@ class bin
 
 				$characters = "0123456789abcdefghijklmnopqrstuvwxyz";
 			      	if($this->db->config['pb_hexlike_id'])
-					$characters = "0123456789abcdef";
+					$characters = "0123456789abcdefabcdef";
 
 				$output = "";
 					for ($p = 0; $p < $length; $p++) {

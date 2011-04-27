@@ -2093,21 +2093,45 @@ function catchTab(evt) {
     }
 }
 
-function showAdminTools(hideMe){
-	document.getElementById('showAdminFunctions').style.display = \"none\";
-	document.getElementById('hiddenAdmin').style.display = \"block\";
+function toggleAdminTools(hideMe){
+	if (document.getElementById('hiddenAdmin').style.display == \"block\"){
+		document.getElementById('hiddenAdmin').style.display = \"none\";
+	}
+	else {
+		document.getElementById('hiddenAdmin').style.display = \"block\";
+	}
 	return false;
 }
 
-function showInstructions(){
-	document.getElementById('showInstructions').style.display = \"none\";
-	document.getElementById('instructions').style.display = \"block\";
+function toggleInstructions(){
+	hideSubdomain();
+	if (document.getElementById('instructions').style.display == \"block\"){
+		document.getElementById('instructions').style.display = \"none\";
+	}
+	else {
+		document.getElementById('instructions').style.display = \"block\";
+	}
 	return false;
 }
 
-function showSubdomain(){
-	document.getElementById('showSubdomain').style.display = \"none\";
-	document.getElementById('subdomainForm').style.display = \"block\";
+function hideInstructions(){
+	document.getElementById('instructions').style.display = \"none\";
+	return false;
+}
+
+function toggleSubdomain(){
+	hideInstructions();
+	if (document.getElementById('subdomainForm').style.display == \"block\"){
+		document.getElementById('subdomainForm').style.display = \"none\";
+	}
+	else {
+		document.getElementById('subdomainForm').style.display = \"block\";
+	}
+	return false;
+}
+
+function hideSubdomain(){
+	document.getElementById('subdomainForm').style.display = \"none\";
 	return false;
 }
 
@@ -2225,21 +2249,30 @@ function submitPaste(targetButton) {
 				<?php } ?>
 
 
-				function showAdminTools(hideMe){
-					$('#showAdminFunctions').hide(500);
-					$('#hiddenAdmin').show(500);
+				function toggleAdminTools(hideMe){
+					$('#hiddenAdmin').slideToggle(500);
 					return false;
 				}
 
-				function showInstructions(){
-					$('#showInstructions').hide(500);
-					$('#instructions').show(500);
+				function toggleInstructions(){
+					hideSubdomain();
+					$('#instructions').slideToggle(500);
 					return false;
 				}
 
-				function showSubdomain(){
-					$('#showSubdomain').hide(500);
-					$('#subdomainForm').show(500);
+				function hideInstructions(){
+					$('#instructions').hide(500);
+					return false;
+				}
+
+				function toggleSubdomain(){
+					hideInstructions();
+					$('#subdomainForm').slideToggle(500);
+					return false;
+				}
+
+				function hideSubdomain(){
+					$('#subdomainForm').hide(500);
 					return false;
 				}
 
@@ -2796,7 +2829,7 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 					echo "&nbsp;";
 			if($requri)
 				{
-					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
+					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return toggleAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
 					echo "<div id=\"adminFunctions\">
 							<form id=\"adminForm\" action=\"" . $bin->linker($requri) . "\" method=\"post\">
 								<label for=\"adminPass\">Password</label><br />
@@ -2817,7 +2850,7 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 				{
 					echo "<div id=\"recentPosts\" class=\"recentPosts\">";
 					echo "<h2><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
-					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
+					echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return toggleAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><h2>Administrate</h2>";
 					echo "<div id=\"adminFunctions\">
 							<form id=\"adminForm\" action=\"" . $bin->linker($requri) . "\" method=\"post\">
 								<label for=\"adminPass\">Password</label><br />
@@ -3045,7 +3078,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				echo "<div class=\"result\"><h1>Warning!</h1><div class=\"error\">You are about to leave the site!</div>
 				<div class=\"infoMessage\">This paste redirects you to<br /><br /><div id=\"emphasizedURL\">" . $bin->checkIfRedir(substr($requri, 0, -1)) . "</div><br /><br />Danger lurks on the world wide web, if you want to visit the site <strong><a href=\"" . $bin->checkIfRedir(substr($requri, 0, -1)) . "\">click here</a></strong>. Please note that the owner of this pastebin will not be held responsible for the content of the site.<br /><br /><a href=\"" . $bin->linker() . "\">Take me back...</a></div></div>";
 
-			echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return showAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><div class=\"spacer\">&nbsp;</div><h2>Administrate</h2>";
+			echo "<div id=\"showAdminFunctions\"><a href=\"#\" onclick=\"return toggleAdminTools();\">Show Admin tools</a></div><div id=\"hiddenAdmin\"><div class=\"spacer\">&nbsp;</div><h2>Administrate</h2>";
 					echo "<div id=\"adminFunctions\">
 							<form id=\"adminForm\" action=\"" . $bin->linker(substr($requri, 0, -1)) . "\" method=\"post\">
 								<label for=\"adminPass\">Password</label><br />
@@ -3159,7 +3192,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 		} else
 			{
 				if($CONFIG['pb_subdomains'])
-					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showSubdomain();\">make a subdomain</a> ]";
+					$subdomainClicker = " [ <a href=\"#\" onclick=\"return toggleSubdomain();\">make a subdomain</a> ]";
 				else
 					$subdomainClicker = NULL;
 
@@ -3174,7 +3207,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						$subdomain_action = $bin->linker();
 					}
 					
-				$subdomainForm = "<div id=\"subdomainForm\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form><div class=\"spacer\">&nbsp;</div></div>";
+				$subdomainForm = "<div id=\"subdomainForm\" style=\"display: none\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form><div class=\"spacer\">&nbsp;</div></div>";
 
 				if(strlen($bin->linker()) < 16)
 					$isShortURL = " If your text is a URL, the pastebin will recognize it and will create a Short URL forwarding page! (Like bit.ly, is.gd, etc)";
@@ -3261,11 +3294,12 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				echo "<div id=\"pastebin\" class=\"pastebin\">"
 				. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
 				$bin->setTagline($CONFIG['pb_tagline'])
-				. "<div id=\"result\">&nbsp;</div>
+				. "<div id=\"result\"></div>
 				<div id=\"formContainer\">
+				<div><span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return toggleInstructions();\">more info</a> ]</span><span id=\"showSubdomain\">" . $subdomainClicker . "</span>
 				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>" . $service['subdomains']['tip'] . "
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">
-						<div><label for=\"pasteEnter\" class=\"pasteEnterLabel\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]</span><span id=\"showSubdomain\">" . $subdomainClicker . "</span></label>
+						<div><label for=\"pasteEnter\" class=\"pasteEnterLabel\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . "</label>
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\"></textarea></div>
 						<div id=\"foundURL\" style=\"display: none;\">URL has been detected...</div>
 						<div class=\"spacer\">&nbsp;</div>

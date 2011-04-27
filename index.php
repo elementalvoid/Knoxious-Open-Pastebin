@@ -2874,7 +2874,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 		echo "<div id=\"pastebin\" class=\"pastebin\">"
 			. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
 			$bin->setTagline($CONFIG['pb_tagline'])
-			. "<div id=\"result\">&nbsp;</div>";
+			. "<div id=\"result\"></div>";
 
 		if($pasted = $db->readPaste($requri))
 			{

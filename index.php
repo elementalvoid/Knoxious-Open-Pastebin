@@ -928,22 +928,35 @@ class bin
 
 			}
 
-		public function flowplayer()
+		public function flowplayer($javascript = FALSE)
 			{
 				if($this->db->config['pb_flowplayer'] == FALSE)
 					return false;
-
+					
+				$jsMin = str_ireplace("flowplayer.swf", "flowplayer.min.js", $this->db->config['pb_flowplayer']);
+					
 				if(preg_match("/^(http|https|ftp):\/\/(.*?)/", $this->db->config['pb_flowplayer']))
 					{
 						$headers = @get_headers($this->db->config['pb_flowplayer']);
-						if (preg_match("|200|", $headers[0]))
-							return $this->db->config['pb_flowplayer'];
+						$jsHeaders = @get_headers($jsMin);
+						if (preg_match("|200|", $headers[0]) && preg_match("|200|", $jsHeaders[0]))
+							{
+								if($javascript)
+									return $jsMin;
+								else
+									return $this->db->config['pb_flowplayer'];
+							}
 						else
 							return false;
 					} else
 						{
-							if(file_exists($this->db->config['pb_flowplayer']))
-								return $this->db->config['pb_flowplayer'];
+							if(file_exists($this->db->config['pb_flowplayer']) && file_exists($jsMin))
+								{
+									if($javascript)
+										return $jsMin;
+									else
+										return $this->db->config['pb_flowplayer'];
+								}
 							else
 								return false;
 						}
@@ -1373,18 +1386,16 @@ class bin
 					{
 
 						if($type['flv']){
-							$output = "<object id=\"flowplayer\" classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\">
-									<param name=\"movie\" value=\"" . $this->flowplayer() . "\" /> 
-									<param name=\"flashvars\" 
-										value='config={\"clip\":{\"autoPlay\":false,\"autoBuffering\":true,\"url\":\"{VIDEO}\"}}' />
-	
-
-									<!-- EMBED tag for Netscape Navigator 2.0+ and Mozilla compatible browsers -->
-									<embed type=\"application/x-shockwave-flash\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\" 
-										src=\"http://releases.flowplayer.org/swf/flowplayer-3.2.0.swf\"
-										flashvars='config={\"clip\":{\"autoPlay\":false,\"autoBuffering\":true,\"url\":\"{VIDEO}\"}}'/>
-	
-								</object>";
+							$output = "	<a 
+											href=\"{VIDEO}\"
+											style=\"display: block; width: " . $this->db->config['pb_video_size']['width'] . "px; height: " . $this->db->config['pb_video_size']['height'] . "px;\"
+											id=\"player\"
+										>
+										</a>
+										
+										<script type=\"text/javascript\">
+											flowplayer(\"player\", \"" . $this->flowplayer() . "\");
+										</script>";
 							$is = "flv";
 						}
 					}
@@ -2037,6 +2048,9 @@ if($requri != "install")
 		</style>
 		<?php
 			}
+			
+			if($bin->flowplayer())
+				echo "<script src=\"" . $bin->flowplayer(TRUE) . "\"></script>";
 
 			/* begin JS */
 

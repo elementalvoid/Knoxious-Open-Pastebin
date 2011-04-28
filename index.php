@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.9
+ *	Knoxious Open Pastebin		 v 1.1.10
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -2050,7 +2050,7 @@ if($requri != "install")
 			}
 			
 			if($bin->flowplayer())
-				echo "<script src=\"" . $bin->flowplayer(TRUE) . "\"></script>";
+				echo "<script src=\"" . $bin->flowplayer(TRUE) . "\" type=\"text/javascript\"></script>";
 
 			/* begin JS */
 

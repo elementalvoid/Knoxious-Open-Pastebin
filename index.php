@@ -24,6 +24,11 @@ define('ISINCLUDED', 1);
 
 require("config.php");
 
+if(strtolower($_SERVER['HTTPS']) == "on")
+	$CONFIG['pb_protocol'] = "https";
+else
+	$CONFIG['pb_protocol'] = "http";
+
 /* Start Pastebin */
 if(substr(phpversion(), 0, 3) < 5.2)
 	die('PHP 5.2 is required to run this pastebin! This version is ' . phpversion() . '. Please contact your host!');
@@ -1032,10 +1037,11 @@ class bin
 		public function linker($id = FALSE)
 			{
 				$dir = dirname($_SERVER['SCRIPT_NAME']);
+
 				if(strlen($dir) > 1)
-					$now = "http://" . $_SERVER['SERVER_NAME'] . $dir;
+					$now = $this->db->config['pb_protocol'] . "://" . $_SERVER['SERVER_NAME'] . $dir;
 				else
-					$now = "http://" . $_SERVER['SERVER_NAME'];
+					$now = $this->db->config['pb_protocol'] . "://" . $_SERVER['SERVER_NAME'];
 
 				$file = basename($_SERVER['SCRIPT_NAME']);
 				
@@ -1474,7 +1480,7 @@ if(file_exists('./INSTALL_LOCK') && @$_POST['subdomain'] && $CONFIG['pb_subdomai
 	{
 		$seed = $bin->makeSubdomain(@$_POST['subdomain']);
 		if($seed)
-			header("Location: " . str_replace("http://", "http://" . $seed . ".", $bin->linker()));
+			header("Location: " . str_replace($CONFIG['pb_protocol'] . "://", $CONFIG['pb_protocol'] . "://" . $seed . ".", $bin->linker()));
 		else
 			$error_subdomain = TRUE;	
 	}
@@ -3259,16 +3265,16 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 
 				if($CONFIG['subdomain'])
 					{
-						$domain_name = str_replace(array("http://", $CONFIG['subdomain'] . ".", "www."), "", $bin->linker());
+						$domain_name = str_replace(array($CONFIG['pb_protocol'] . "://", $CONFIG['subdomain'] . ".", "www."), "", $bin->linker());
 						$subdomain_action = str_replace($CONFIG['subdomain'] . ".", "", $bin->linker());
 					}
 				else
 					{
-						$domain_name = str_replace(array("http://", "www."), "", $bin->linker());
+						$domain_name = str_replace(array($CONFIG['pb_protocol'] . "://", "www."), "", $bin->linker());
 						$subdomain_action = $bin->linker();
 					}
 					
-				$subdomainForm = "<div id=\"subdomainForm\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form><div class=\"spacer\">&nbsp;</div></div>";
+				$subdomainForm = "<div id=\"subdomainForm\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">" . $CONFIG['pb_protocol'] . "://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form><div class=\"spacer\">&nbsp;</div></div>";
 
 				if(strlen($bin->linker()) < 16)
 					$isShortURL = " If your text is a URL, the pastebin will recognize it and will create a Short URL forwarding page! (Like bit.ly, is.gd, etc)";

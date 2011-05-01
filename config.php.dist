@@ -22,11 +22,15 @@ $CONFIG['mysql_connection_config'] = array(
 	'db_existing'	=>	FALSE		/* Reconnect to an existing table? (TRUE or FALSE) */
 );
 
-// If you chose a flatfile connection, please alter these settings!
+// If you are going to host images or are using a flatfile database, change
+// the following to suit your needs. File and directory permissions should
+// work in most cases.
 $CONFIG['txt_config'] = array(
 	'db_folder'	=>	'data'		/* Name of the folder to store Data */,
 	'db_index'	=>	'INDEX'		/* Name of the index file */,
-	'db_images'	=>	'images'	/* Name of the Image folder (stored in Data) */
+	'db_images'	=>	'images'	/* Name of the Image folder (stored in Data) */,
+	'dir_mode'	=>	0775		/* Directory CHMOD */,
+	'file_mode'	=>	0664		/* File CHMOD */
 );
 
 
@@ -53,13 +57,14 @@ $CONFIG['pb_algo'] = "md5";
 # $CONFIG['pb_algo'] = "sha256";
 
 // Pastebin Admin Password, strong one is mucho recommended!
-// Should be hashed using the algorithm chosen above
-// Example:
-//   echo '<?php echo hash("md5", "password") . "\n";' | php
-// Then insert the output into the variable below
-# $CONFIG['pb_pass'] = "5f4dcc3b5aa765d61d8327deb882cf99";
 // If a plaintext password is acceptable then use the following
 $CONFIG['pb_pass'] = hash($CONFIG['pb_algo'], "password");
+// Storing plaintext passwords is not recommended.
+// You should consider a hashed password using the algorithm chosen above
+// Example:
+//   echo hash("md5", "password") . "\n";
+// Then insert the output into the variable below and uncomment
+# $CONFIG['pb_pass'] = "5f4dcc3b5aa765d61d8327deb882cf99";
 
 // Pastebin Salts, 4 sequences of random letters and numbers!
 // Please make them at least 6 characters or more!
@@ -99,22 +104,26 @@ $CONFIG['pb_api'] = FALSE;
 $CONFIG['pb_id_length'] = 1;
 # $CONFIG['pb_id_length'] = 5;
 
+// Hexlike IDs (only uses numbers 0-9, letters a-f)
+$CONFIG['pb_hexlike_id'] = FALSE;
+# $CONFIG['pb_hexlike_id'] = TRUE;
+
 // Server side API Adaptor?
 // This allows Javascript frameworks like jQuery to perform cross-domain AJAX.
 // Example code: http://knoxious.co.uk/Sharpshooter
 $CONFIG['pb_api_adaptor'] = FALSE;
-# $CONFIG['pb_api_adaptor'] = "/path/to/adaptor.php";
+# $CONFIG['pb_api_adaptor'] = "path/to/adaptor.php";
 
 // Use alternate Pastebin stylesheet, FALSE uses default
 // Note that URLs are accepted!
 $CONFIG['pb_style'] = FALSE;
-# $CONFIG['pb_style'] = "/path/to/sheet.css";
+# $CONFIG['pb_style'] = "path/to/sheet.css";
 
 // Use Syntax Highlighting
 // This requires GeSHI
 // http://qbnz.com/highlighter/index.php
 $CONFIG['pb_syntax'] = FALSE;
-# $CONFIG['pb_syntax'] = "/path/to/geshi.php";
+# $CONFIG['pb_syntax'] = "path/to/geshi.php";
 
 // Enable Line Highlighting
 // Looks for a 2-6 character long highlight string, FALSE for Disabled.
@@ -131,13 +140,13 @@ $CONFIG['pb_line_highlight_style'] = FALSE;
 // jQuery adds tiger-stripes, effects, AJAX and resize textbox
 // Note that URLs are accepted!
 $CONFIG['pb_jQuery'] = FALSE;
-# $CONFIG['pb_jQuery'] = "/path/to/jQuery.js";
+# $CONFIG['pb_jQuery'] = "path/to/jQuery.js";
 
 // Path to _clipboard.swf (allows copying)
 // http://knoxious.co.uk/Knoxious+Pastebin/index.html#_clipboard
 // Note that swfobject.js is also required in the same Directory
 $CONFIG['pb_clipboard'] = FALSE;
-# $CONFIG['pb_clipboard'] = "/path/to/_clipboard.swf";
+# $CONFIG['pb_clipboard'] = "path/to/_clipboard.swf";
 
 // Date Format (see PHP.net's entry on date();)
 $CONFIG['pb_datetime'] = "Y-m-d H:i:s";
@@ -178,10 +187,11 @@ $CONFIG['pb_image_maxsize'] = 2097152;
 // Enable Video embedding? (TRUE or FALSE)
 $CONFIG['pb_video'] = FALSE;
 
-// Enable FlowPlayer for playing .flv files? (Path or FALSE) Can be a URL.
+// Enable FlowPlayer for playing .flv/mp4 files? (Path or FALSE) Can be a URL.
+// This must include (renamed) flowplayer.swf, flowplayer.controls.swf, flowplayer.min.js
 // http://flowplayer.org
 $CONFIG['pb_flowplayer'] = FALSE;
-# $CONFIG['pb_flowplayer'] = "/path/to/flowplayer.swf";
+# $CONFIG['pb_flowplayer'] = "path/to/flowplayer.swf";
 
 // Embedded Video Size (in Pixels)
 $CONFIG['pb_video_size'] = array('width' => 600, 'height' => 338);
@@ -214,15 +224,9 @@ $CONFIG['pb_infinity'] = FALSE;
 $CONFIG['pb_infinity_default'] = FALSE;
 # $CONFIG['pb_infinity_default'] = TRUE;
 
-
 // Enables Private Posting (TRUE or FALSE)
 $CONFIG['pb_private'] = FALSE;
 # $CONFIG['pb_private'] = TRUE;
-
-// File and directory creation modes
-// These defauls should work for most cases
-$CONFIG['file_mode'] = 0664;
-$CONFIG['dir_mode'] = 0775;
 
 // Error reporting? Time Limit? Memory Usage? Why not!
 @error_reporting(E_ALL ^ E_NOTICE);

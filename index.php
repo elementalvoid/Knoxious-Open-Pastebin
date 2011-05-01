@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.4
+ *	Knoxious Open Pastebin		 v 1.1.10
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -10,12 +10,12 @@
  * 	See the MIT for details (http://opensource.org/licenses/mit-license.php).
  *
  *
- *	A quick to set up, rapid install, one-file pastebin! 
+ *	A quick to set up, rapid install, two-file pastebin! 
  *	(or at least can be)
  *
  *	Supports text and image hosting, url and video linking.
  *
- *	URL: 		http://knoxious.co.uk/
+ *	URL: 		http://xan-manning.co.uk/
  *	EXAMPLE: 	http://pzt.me/
  *
  */
@@ -154,9 +154,9 @@ class db
 						if(!file_exists($path) && is_writable($this->config['txt_config']['db_folder']))
 							{
 								mkdir($path);
-								chmod($path, $CONFIG['dir_mode']);
+								chmod($path, $this->config['txt_config']['dir_mode']);
 								$this->write("FORBIDDEN", $path . "/index.html");
-								chmod($path . "/index.html", $CONFIG['file_mode']);
+								chmod($path . "/index.html", $this->config['txt_config']['file_mode']);
 							}
 
 						for ($i = 1; $i <= $this->config['max_folder_depth'] - 1; $i++) {
@@ -169,9 +169,9 @@ class db
 							if(!file_exists($path) && is_writable($parent))
 								{
 									mkdir($path);
-									chmod($path, $CONFIG['dir_mode']);
+									chmod($path, $this->config['txt_config']['dir_mode']);
 									$this->write("FORBIDDEN", $path . "/index.html");
-									chmod($path . "/index.html", $CONFIG['file_mode']);
+									chmod($path . "/index.html", $this->config['txt_config']['file_mode']);
 								}
 
 						}
@@ -184,9 +184,9 @@ class db
 							if(!file_exists($path) && is_writable($this->config['txt_config']['db_folder'] . "/" . $this->config['txt_config']['db_images']))
 								{
 									mkdir($path);
-									chmod($path, $CONFIG['dir_mode']);
+									chmod($path, $this->config['txt_config']['dir_mode']);
 									$this->write("FORBIDDEN", $path . "/index.html");
-									chmod($path . "/index.html", $CONFIG['file_mode']);
+									chmod($path . "/index.html", $this->config['txt_config']['file_mode']);
 								}
 
 
@@ -200,9 +200,9 @@ class db
 								if(!file_exists($path) && is_writable($parent))
 									{
 										mkdir($path);
-										chmod($path, $CONFIG['dir_mode']);
+										chmod($path, $this->config['txt_config']['dir_mode']);
 										$this->write("FORBIDDEN", $path . "/index.html");
-										chmod($path . "/index.html", $CONFIG['file_mode']);
+										chmod($path . "/index.html", $this->config['txt_config']['file_mode']);
 									}
 
 							}
@@ -397,7 +397,7 @@ class db
 				if(!move_uploaded_file($file['tmp_name'], $path))
 					return false;
 				
-				chmod($path, $CONFIG['dir_mode']);
+				chmod($path, $this->config['txt_config']['dir_mode']);
 
 				if(!$rename)
 					$filename = $file['name'];
@@ -438,7 +438,7 @@ class db
 				fwrite($fopen, $data);
 				fclose($fopen);
 
-				chmod($path, $CONFIG['dir_mode']);
+				chmod($path, $this->config['txt_config']['dir_mode']);
 
 				$filename = $rename . "." . strtolower($info['extension']);
 
@@ -496,7 +496,7 @@ class db
 							$index[] = $id;
 							$this->write($this->serializer($index), $this->setDataPath() . "/" . $this->config['txt_config']['db_index']);				
 							$result = $this->write($this->serializer($paste), $this->setDataPath($paste['ID']));
-							chmod($this->setDataPath($paste['ID']), $CONFIG['file_mode']);
+							chmod($this->setDataPath($paste['ID']), $this->config['txt_config']['file_mode']);
 						break;
 					}
 				return $result;
@@ -928,22 +928,35 @@ class bin
 
 			}
 
-		public function flowplayer()
+		public function flowplayer($javascript = FALSE)
 			{
 				if($this->db->config['pb_flowplayer'] == FALSE)
 					return false;
-
+					
+				$jsMin = str_ireplace("flowplayer.swf", "flowplayer.min.js", $this->db->config['pb_flowplayer']);
+					
 				if(preg_match("/^(http|https|ftp):\/\/(.*?)/", $this->db->config['pb_flowplayer']))
 					{
 						$headers = @get_headers($this->db->config['pb_flowplayer']);
-						if (preg_match("|200|", $headers[0]))
-							return $this->db->config['pb_flowplayer'];
+						$jsHeaders = @get_headers($jsMin);
+						if (preg_match("|200|", $headers[0]) && preg_match("|200|", $jsHeaders[0]))
+							{
+								if($javascript)
+									return $jsMin;
+								else
+									return $this->db->config['pb_flowplayer'];
+							}
 						else
 							return false;
 					} else
 						{
-							if(file_exists($this->db->config['pb_flowplayer']))
-								return $this->db->config['pb_flowplayer'];
+							if(file_exists($this->db->config['pb_flowplayer']) && file_exists($jsMin))
+								{
+									if($javascript)
+										return $jsMin;
+									else
+										return $this->db->config['pb_flowplayer'];
+								}
 							else
 								return false;
 						}
@@ -953,9 +966,12 @@ class bin
 
 		public function generateRandomString($length)
 			{
-				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo', 'subdomain', 'forbidden');
+				$checkArray = array('install', 'api', 'defaults', 'recent', 'raw', 'moo', 'subdomain', 'forbidden', 0);
 
-				$characters = "123456789abcdefghijklmnopqrstuvwxyz";  
+				$characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+			      	if($this->db->config['pb_hexlike_id'])
+					$characters = "0123456789abcdefabcdef";
+
 				$output = "";
 					for ($p = 0; $p < $length; $p++) {
 						$output .= $characters[mt_rand(0, strlen($characters))];
@@ -971,7 +987,10 @@ class bin
 			{
 				if(!$this->db->config['pb_autoclean'])
 					return false;
-				
+
+				if(!file_exists('INSTALL_LOCK'))
+					return false;
+	
 				switch($this->db->dbt)
 					{
 						case "mysql":
@@ -1133,13 +1152,13 @@ class bin
 									$domain = array('ID' => "subdomain", 'Subdomain' => $subdomain, 'Image' => 1, 'Author' => "System", 'Protect' => 1, 'Lifespan' => 0, 'Content' => "Subdomain marker");
 									$this->db->insertPaste($domain['ID'], $domain, TRUE);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, $CONFIG['dir_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, $this->db->config['txt_config']['dir_mode']);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], $CONFIG['dir_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], $this->db->config['txt_config']['dir_mode']);
 									$this->db->write("FORBIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", $CONFIG['dir_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", $this->db->config['txt_config']['dir_mode']);
 									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", $this->db->config['txt_config']['file_mode']);
 									return $subdomain;
 								break;
 								case "txt":
@@ -1148,15 +1167,15 @@ class bin
 									$this->db->write($subdomain_list, $subdomainsFile);
 									$subdomain = $subdomain;
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, $CONFIG['dir_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, $this->db->config['txt_config']['dir_mode']);
 									mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], $CONFIG['dir_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'], $this->db->config['txt_config']['dir_mode']);
 									$this->db->write("FORBIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", $CONFIG['dir_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/index.html", $this->db->config['txt_config']['dir_mode']);
 									$this->db->write($this->db->serializer(array()), $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index']);
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index'], $CONFIG['file_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_index'], $this->db->config['txt_config']['file_mode']);
 									$this->db->write("FORIDDEN", $this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html");
-									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);
+									chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images'] . "/index.html", $this->db->config['txt_config']['file_mode']);
 									return $subdomain;
 								break;
 							}
@@ -1367,18 +1386,16 @@ class bin
 					{
 
 						if($type['flv']){
-							$output = "<object id=\"flowplayer\" classid=\"clsid:D27CDB6E-AE6D-11cf-96B8-444553540000\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\">
-									<param name=\"movie\" value=\"" . $this->flowplayer() . "\" /> 
-									<param name=\"flashvars\" 
-										value='config={\"clip\":{\"autoPlay\":false,\"autoBuffering\":true,\"url\":\"{VIDEO}\"}}' />
-	
-
-									<!-- EMBED tag for Netscape Navigator 2.0+ and Mozilla compatible browsers -->
-									<embed type=\"application/x-shockwave-flash\" width=\"" . $this->db->config['pb_video_size']['width'] . "\" height=\"" . $this->db->config['pb_video_size']['height'] . "\" 
-										src=\"http://releases.flowplayer.org/swf/flowplayer-3.2.0.swf\"
-										flashvars='config={\"clip\":{\"autoPlay\":false,\"autoBuffering\":true,\"url\":\"{VIDEO}\"}}'/>
-	
-								</object>";
+							$output = "	<a 
+											href=\"{VIDEO}\"
+											style=\"display: block; width: " . $this->db->config['pb_video_size']['width'] . "px; height: " . $this->db->config['pb_video_size']['height'] . "px;\"
+											id=\"player\"
+										>
+										</a>
+										
+										<script type=\"text/javascript\">
+											flowplayer(\"player\", \"" . $this->flowplayer() . "\");
+										</script>";
 							$is = "flv";
 						}
 					}
@@ -1459,7 +1476,7 @@ if(file_exists('./INSTALL_LOCK') && @$_POST['subdomain'] && $CONFIG['pb_subdomai
 		if($seed)
 			header("Location: " . str_replace("http://", "http://" . $seed . ".", $bin->linker()));
 		else
-			header("Location: " . $bin->linker());
+			$error_subdomain = TRUE;	
 	}
 
 $CONFIG['subdomain'] = $bin->setSubdomain();
@@ -1501,7 +1518,83 @@ if($requri == "defaults")
 	{
 
 		if($reqhash == "moo")
-			die(phpinfo());
+			{
+				$ee_image = 	"\x89\x50\x4e\x47\x0d\x0a\x1a\x0a\x00\x00\x00\x0d\x49\x48\x44\x52" .
+						"\x00\x00\x00\x10\x00\x00\x00\x12\x08\x06\x00\x00\x00\x52\x3b\x5e" .
+						"\x6a\x00\x00\x00\x01\x73\x52\x47\x42\x00\xae\xce\x1c\xe9\x00\x00" .
+						"\x00\x06\x62\x4b\x47\x44\x00\xff\x00\xff\x00\xff\xa0\xbd\xa7\x93" .
+						"\x00\x00\x00\x09\x70\x48\x59\x73\x00\x00\x20\x88\x00\x00\x20\x88" .
+						"\x01\x1c\x2c\xed\x2e\x00\x00\x00\x07\x74\x49\x4d\x45\x07\xdb\x04" .
+						"\x1c\x12\x1f\x15\xe4\x47\x95\xc0\x00\x00\x03\xc3\x49\x44\x41\x54" .
+						"\x38\xcb\x4d\x54\x4d\x48\x63\x67\x14\x3d\x9f\x2f\x2f\x26\xf1\x2f" .
+						"\xf1\x07\x5b\x62\xd3\xf8\x43\x8c\x71\x30\x15\xac\x35\x45\xa1\xd8" .
+						"\xa6\x32\x0a\x96\x41\x44\x2c\x15\x05\xa9\xff\x53\x28\x83\x82\xab" .
+						"\xa2\xbb\x81\x52\x5d\x29\xf8\x0b\x53\x43\xa4\x31\x2d\x6a\x22\x0a" .
+						"\x62\x90\x52\x44\x5c\x59\x29\x28\xb6\x82\x4e\x63\x47\x7d\x36\x9a" .
+						"\x4c\x92\xa7\xc9\x7b\xb7\xab\x58\xcf\xea\x2e\xce\xb9\xdc\x7b\x0e" .
+						"\xf7\x02\xff\xa3\x28\x2f\x2f\x6f\x1d\xc0\x27\xfd\xfd\xfd\xe3\x8b" .
+						"\x8b\x8b\x7f\x79\x3c\x9e\xfb\x8d\x8d\x8d\xd8\xe8\xe8\xe8\x59\x51" .
+						"\x51\xd1\x1c\x80\x4f\xf5\x7a\xbd\x17\x40\xd9\x83\xaa\xaf\xaf\xef" .
+						"\xa1\x36\x18\x0c\x54\x52\x52\x42\x8f\x21\x49\x12\x39\x9d\x4e\xb2" .
+						"\xdb\xed\x64\x36\x9b\xc9\x68\x34\x52\x82\x4f\x44\x50\x4c\x4c\x4c" .
+						"\xa0\xa2\xa2\x62\xb0\xb7\xb7\xf7\xa5\x46\xa3\x81\x5a\xad\x26\x00" .
+						"\x2c\xc1\x69\x69\x69\x61\x91\x48\x04\xa9\xa9\xa9\xa4\x56\xab\x31" .
+						"\x3c\x3c\xcc\x00\xd0\xd2\xd2\xd2\x0f\x8c\xb1\x17\xec\xe9\xd3\xa7" .
+						"\xbf\xae\xad\xad\x55\xdf\xdf\xdf\x43\xa9\x54\x12\x00\xb8\x5c\x2e" .
+						"\x26\x8a\x22\xea\xeb\xeb\x69\x6c\x6c\x8c\x1d\x1e\x1e\x02\x00\x5d" .
+						"\x5d\x5d\xb1\xed\xed\x6d\x8a\xc5\x62\xe0\x79\x9e\x75\x77\x77\xbf" .
+						"\x46\x56\x56\xd6\x3b\x00\xbe\x1b\x19\x19\x21\x22\x22\xb7\xdb\x2d" .
+						"\xdf\xdd\xdd\x11\x11\x91\xc3\xe1\x90\x27\x27\x27\x13\xdb\xc8\x53" .
+						"\x53\x53\x44\x44\xf2\xcc\xcc\x0c\x01\x98\xe2\x79\xfe\xbd\xa4\xeb" .
+						"\xeb\xeb\x37\x0b\x0b\x0b\xcf\x2d\x16\x0b\x00\x50\x28\x14\x82\x52" .
+						"\xa9\x24\xbd\x5e\x4f\x99\x99\x99\x88\x44\x22\x64\xb5\x5a\x09\x00" .
+						"\x22\x91\x08\x01\x40\x61\x61\x21\x5a\x5b\x5b\xbf\x8e\xc5\x62\xaf" .
+						"\x39\x9d\x4e\xf7\xa5\xc3\xe1\xf8\x6a\x77\x77\x97\xca\xcb\xcb\x59" .
+						"\x41\x41\x01\x66\x66\x66\x58\x57\x57\x17\xe3\x38\x0e\x55\x55\x55" .
+						"\xcc\x6c\x36\xb3\xbd\xbd\x3d\xd4\xd5\xd5\x31\xad\x56\x0b\x9f\xcf" .
+						"\x87\x93\x93\x13\x26\x08\x02\x43\x6d\x6d\xed\x4a\x2c\x16\xa3\xe9" .
+						"\xe9\xe9\x87\x51\x1f\x85\x20\x3f\x4a\x43\x26\x22\x8a\x46\xa3\x72" .
+						"\x5b\x5b\x1b\x11\x11\x4d\x4e\x4e\xfe\xa1\x08\x04\x02\x1f\x0c\x0e" .
+						"\x0e\xa2\xa3\xa3\x03\x5e\xaf\x17\x0d\x0d\x0d\x0c\x00\x5e\xcd\xce" .
+						"\x23\x25\x2c\xb1\xa4\x24\x0e\xff\xc4\x42\xe8\xfb\xf6\x1b\x16\x8f" .
+						"\xc7\xe1\x72\xb9\x98\xd9\x6c\x06\x00\xe2\x38\xce\xa2\xe0\x79\x3e" .
+						"\x5d\x10\x04\x58\xad\x56\x38\x9d\x4e\xa4\xa7\xa5\x21\x74\x1b\x44" .
+						"\xcd\xbb\xc5\x98\x70\x2f\xe0\xc3\x27\x56\x54\x1b\x4a\x30\xfe\xf2" .
+						"\x7b\x14\x97\x95\x62\x6b\x6b\x0b\xf3\xf3\xf3\x00\xc0\xf6\xf6\xf6" .
+						"\x88\x33\x18\x0c\x3d\xe1\x70\x58\xab\xd5\x6a\x31\x30\x30\x40\x73" .
+						"\x73\x73\xf8\x65\xd1\x85\xf6\x2f\x9a\x99\x2e\x23\x83\x32\x33\xb4" .
+						"\x20\x99\xe0\x70\xff\x84\xab\x60\x00\xf5\xf5\xf5\x70\x38\x1c\xcc" .
+						"\xed\x76\xd3\xfa\xfa\x3a\x63\x3d\x3d\x3d\x3f\x9b\x4c\xa6\x67\x5e" .
+						"\xaf\x17\x9b\x9b\x9b\xf0\xfb\xfd\x54\x5d\x53\xc3\xd2\x93\xd5\xb0" .
+						"\x7f\x54\x43\xc9\xca\x64\x76\xfa\xef\x1b\x54\x54\xdb\xa8\xb3\xb3" .
+						"\x93\xcd\xce\xce\x92\xcf\xe7\x63\x82\x20\xe0\xe2\xe2\x62\x1f\x00" .
+						"\x9e\xf9\x7c\x3e\x0a\x06\x83\x09\xc3\xe4\x9b\x9b\x1b\x1a\x1a\x1a" .
+						"\x22\x4b\x69\xa9\x6c\x79\x52\x4a\xc7\xc7\x7f\x52\x34\x1a\x95\x89" .
+						"\x88\x2e\x2f\x2f\xe5\xb2\xb2\x32\xb9\xb2\xb2\x92\x74\x3a\xdd\x30" .
+						"\x07\xe0\x90\x88\x9e\x67\x67\x67\x6b\xf4\x7a\x3d\x29\x14\x0a\xa8" .
+						"\x54\x2a\xd8\xed\x76\x76\x76\x7a\x8a\xb7\xa1\xb7\x38\x38\xf8\x1d" .
+						"\x4d\x4d\x4d\x00\x80\x83\x83\x03\xac\xae\xae\xb2\x70\x38\x0c\xbf" .
+						"\xdf\xff\x19\x07\x00\xfb\xfb\xfb\x3f\x9a\x4c\xa6\x17\xd1\x68\x94" .
+						"\x05\x83\x41\xa4\xa4\xa4\x40\xa5\x52\x31\x9b\xcd\x86\xe3\xe3\x63" .
+						"\xb4\xb7\xb7\xe3\xf6\xf6\x16\x3b\x3b\x3b\x00\x00\x8f\xc7\xc3\x8e" .
+						"\x8e\x8e\x3e\x06\xf0\x37\x94\x4a\x65\xe2\xb8\x4c\x2d\x2d\x2d\x54" .
+						"\x5c\x5c\x4c\xb9\xb9\xb9\x64\xb3\xd9\x68\x79\x79\x59\xde\xd8\xd8" .
+						"\xa0\xe6\xe6\x66\x32\x1a\x8d\x72\x7e\x7e\x3e\x35\x36\x36\x92\x46" .
+						"\xa3\xf9\x1c\x00\x14\x0a\x05\x38\x49\x92\x12\x0d\xee\x25\x49\x1a" .
+						"\x16\x45\x11\x39\x39\x39\x88\xc7\xe3\x74\x7e\x7e\xce\x34\x1a\x0d" .
+						"\x56\x56\x56\x48\xa7\xd3\x31\x41\x10\xc0\x18\xc3\xd9\xd9\xd9\x2b" .
+						"\x00\x27\xb2\x2c\x23\xe9\xd1\x43\x79\x9f\xe3\x38\x04\x02\x01\x92" .
+						"\x65\x19\x92\x24\xb1\xad\xad\xad\xdf\x46\x47\x47\xc7\x79\x9e\x67" .
+						"\x92\x24\x91\x28\x8a\x10\x45\x11\x69\x69\x69\x85\x09\xd1\x7f\x88" .
+						"\xc0\x07\x0e\x24\x81\x53\x98\x00\x00\x00\x00\x49\x45\x4e\x44\xae" .
+						"\x42\x60\x82";
+
+						header("Pragma: public"); // required
+						header("Cache-Control: private", false); // required for certain browsers
+						header("Content-Type: image/png");
+						echo $ee_image;
+						die();
+			}
 
 		if(strstr($reqhash, "callback"))
 			$callback = array(str_replace("callback=", null, $reqhash) . '(', ')');
@@ -1834,7 +1927,7 @@ if($requri == "api")
 							$pasted = $pasted[0];
 
 						if(strlen($pasted['Image']) > 3)
-							$pasted['Image_path'] = $bin->linker() . $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/" . $pasted['Image'];
+							$pasted['Image_path'] = $bin->linker() . $db->setDataPath($pasted['Image']);
 
 						$JSON = '
 								{
@@ -1955,6 +2048,7 @@ if($requri != "install")
 				.infoMessage { padding: 25px; font-size: medium; max-width: 800px; }
 				.lineHighlight { background-color: #FFFFAA; font-weight: bolder; color: #000000; }
 				.resizehandle {	background: #F0F0F0 scroll 45%; cursor: s-resize; text-align: center; color: #AAAAAA; height: 16px; width: 100%; } 
+				.pasteEnterLabel { width: 80%; display: block; }
 				#newPaste { text-align: center; border-bottom: 1px dotted #CCCCCC; padding-bottom: 10px; }
 				#lineNumbers { width: 100%; max-height: 500px; background-color: #FFFFFF; overflow: auto; padding: 0; margin: 0; }
 				div#siteWrapper { width: 100%; margin: 0 auto; }
@@ -1975,6 +2069,8 @@ if($requri != "install")
 				#showAdminFunctions { font-size: xx-small; font-weight: bold; text-align: center; }
 				#hiddenAdmin { display: none; padding-right: 10px; }
 				#instructions { display: none; }
+				#tagline { margin-bottom: 10px; }
+				#subdomainForm { display: none; }
 				#serviceList li { margin-top: 7px; margin-bottom: 7px; list-style: square; }
 				#authorContainer { width: 48%; float: left; margin-bottom: 10px;  }
 				#authorContainerReply { padding-right: 52%; margin-bottom: 10px;  }
@@ -2028,8 +2124,135 @@ if($requri != "install")
 		</style>
 		<?php
 			}
+			
+			if($bin->flowplayer())
+				echo "<script src=\"" . $bin->flowplayer(TRUE) . "\" type=\"text/javascript\"></script>";
 
-		/* begin JS */
+			/* begin JS */
+
+			$_commonJS = "/* AJAXIAN */
+var tab = \"    \";
+       
+function catchTab(evt) {
+    var t = evt.target;
+    var ss = t.selectionStart;
+    var se = t.selectionEnd;
+ 
+    if (evt.keyCode == 9) {
+        evt.preventDefault();
+               
+        if (ss != se && t.value.slice(ss,se).indexOf(\"\\n\") != -1) {
+            var pre = t.value.slice(0,ss);
+            var sel = t.value.slice(ss,se).replace(/\\n/g,\"\\n\"+tab);
+            var post = t.value.slice(se,t.value.length);
+            t.value = pre.concat(tab).concat(sel).concat(post);
+                   
+            t.selectionStart = ss + tab.length;
+            t.selectionEnd = se + tab.length;
+        }
+               
+        else {
+            t.value = t.value.slice(0,ss).concat(tab).concat(t.value.slice(ss,t.value.length));
+            if (ss == se) {
+                t.selectionStart = t.selectionEnd = ss + tab.length;
+            }
+            else {
+                t.selectionStart = ss + tab.length;
+                t.selectionEnd = se + tab.length;
+            }
+        }
+    }
+           
+   else if (evt.keyCode==8 && t.value.slice(ss - 4,ss) == tab) {
+        evt.preventDefault();
+               
+        t.value = t.value.slice(0,ss - 4).concat(t.value.slice(ss,t.value.length));
+        t.selectionStart = t.selectionEnd = ss - tab.length;
+    }
+           
+    else if (evt.keyCode==46 && t.value.slice(se,se + 4) == tab) {
+        evt.preventDefault();
+             
+        t.value = t.value.slice(0,ss).concat(t.value.slice(ss + 4,t.value.length));
+        t.selectionStart = t.selectionEnd = ss;
+    }
+
+    else if (evt.keyCode == 37 && t.value.slice(ss - 4,ss) == tab) {
+        evt.preventDefault();
+        t.selectionStart = t.selectionEnd = ss - 4;
+    }
+    else if (evt.keyCode == 39 && t.value.slice(ss,ss + 4) == tab) {
+        evt.preventDefault();
+        t.selectionStart = t.selectionEnd = ss + 4;
+    }
+}
+
+function showAdminTools(hideMe){
+	document.getElementById('showAdminFunctions').style.display = \"none\";
+	document.getElementById('hiddenAdmin').style.display = \"block\";
+	return false;
+}
+
+function showInstructions(){
+	document.getElementById('showInstructions').style.display = \"none\";
+	document.getElementById('instructions').style.display = \"block\";
+	return false;
+}
+
+function showSubdomain(){
+	document.getElementById('showSubdomain').style.display = \"none\";
+	document.getElementById('subdomainForm').style.display = \"block\";
+	return false;
+}
+
+function toggleWrap() {
+	var n = 0;
+	var pres = document.getElementsByTagName('pre');
+
+	for(n in pres)
+		{
+			if(pres[n].style != null && (pres[n].style.whiteSpace == \"pre\" || pres[n].style.whiteSpace == \"\")) {
+					pres[n].style.whiteSpace = \"pre-wrap\";
+			}
+			else if(pres[n].style != null) {
+				pres[n].style.whiteSpace = \"pre\";
+			}
+		}
+
+	return false;
+}
+
+function toggleExpand() {
+	if(document.getElementById('lineNumbers').style.maxHeight != \"none\") {
+			document.getElementById('lineNumbers').style.maxHeight = \"none\";
+			document.getElementById('lineNumbers').style.width = \"auto\";
+	}
+	else {
+		document.getElementById('lineNumbers').setAttribute('style', '');
+	}
+	return false;
+}
+
+function toggleStyle(){
+	if(document.getElementById('orderedList').getAttribute('class') == \"monoText\" || document.getElementById('orderedList').getAttribute('class') == \"\")
+		document.getElementById('orderedList').setAttribute(\"class\", \"plainText\");
+	else
+		document.getElementById('orderedList').setAttribute(\"class\", \"monoText\");
+	return false;
+}
+
+function submitPaste(targetButton) {
+	var disabledButton = document.createElement('input');
+	var parentContainer = document.getElementById('submitContainer');
+	disabledButton.setAttribute('value', 'Posting...');
+	disabledButton.setAttribute('type', 'button');
+	disabledButton.setAttribute('disabled', 'disabled');
+	disabledButton.setAttribute('id', 'dummyButton');
+	targetButton.style.display = \"none\";
+	parentContainer.appendChild(disabledButton);
+	return true;
+}";
+
 			if($bin->jQuery())
 				{ echo "<script type=\"text/javascript\" src=\"" . $CONFIG['pb_jQuery'] . "\"></script>";
 
@@ -2107,6 +2330,13 @@ if($requri != "install")
 					$('#instructions').show(500);
 					return false;
 				}
+
+				function showSubdomain(){
+					$('#showSubdomain').hide(500);
+					$('#subdomainForm').show(500);
+					return false;
+				}
+
 
 				function toggleWrap(){
 					if($('pre').css('white-space') == "pre")
@@ -2393,8 +2623,8 @@ function sizeFlash() {
 	  name: "_clipboardURI"
 	};
 
-	swfobject.embedSWF("_clipboard.swf", "_clipboard_replace", divWidth, divHeightURL, "10.0.0", "expressInstall.swf", flashvars, params, attributes);
-	swfobject.embedSWF("_clipboard.swf", "_clipboardURI_replace", divWidthURL, divHeightURL, "10.0.0", "expressInstall.swf", flashvarsURI, paramsURI, attributesURI);
+	swfobject.embedSWF("<?php echo $CONFIG['pb_clipboard']; ?>", "_clipboard_replace", divWidth, divHeightURL, "10.0.0", "expressInstall.swf", flashvars, params, attributes);
+	swfobject.embedSWF("<?php echo $CONFIG['pb_clipboard']; ?>", "_clipboardURI_replace", divWidthURL, divHeightURL, "10.0.0", "expressInstall.swf", flashvarsURI, paramsURI, attributesURI);
 
 	repositionFlash("_clipboard", "_copyText");
 	repositionFlash("_clipboardURI", "_copyURL");
@@ -2427,124 +2657,9 @@ function checkIfURL(checkMe){
 function checkIfURL(checkMe){
 	return false;
 }
-<?php } ?>
+<?php } 
 
-/* AJAXIAN */
-var tab = "	";
-       
-function catchTab(evt) {
-    var t = evt.target;
-    var ss = t.selectionStart;
-    var se = t.selectionEnd;
- 
-    if (evt.keyCode == 9) {
-        evt.preventDefault();
-               
-        if (ss != se && t.value.slice(ss,se).indexOf("\n") != -1) {
-            var pre = t.value.slice(0,ss);
-            var sel = t.value.slice(ss,se).replace(/\n/g,"\n"+tab);
-            var post = t.value.slice(se,t.value.length);
-            t.value = pre.concat(tab).concat(sel).concat(post);
-                   
-            t.selectionStart = ss + tab.length;
-            t.selectionEnd = se + tab.length;
-        }
-               
-        else {
-            t.value = t.value.slice(0,ss).concat(tab).concat(t.value.slice(ss,t.value.length));
-            if (ss == se) {
-                t.selectionStart = t.selectionEnd = ss + tab.length;
-            }
-            else {
-                t.selectionStart = ss + tab.length;
-                t.selectionEnd = se + tab.length;
-            }
-        }
-    }
-           
-   else if (evt.keyCode==8 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-               
-        t.value = t.value.slice(0,ss - 4).concat(t.value.slice(ss,t.value.length));
-        t.selectionStart = t.selectionEnd = ss - tab.length;
-    }
-           
-    else if (evt.keyCode==46 && t.value.slice(se,se + 4) == tab) {
-        evt.preventDefault();
-             
-        t.value = t.value.slice(0,ss).concat(t.value.slice(ss + 4,t.value.length));
-        t.selectionStart = t.selectionEnd = ss;
-    }
-
-    else if (evt.keyCode == 37 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss - 4;
-    }
-    else if (evt.keyCode == 39 && t.value.slice(ss,ss + 4) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss + 4;
-    }
-}
-
-function toggleWrap() {
-	var n = 0;
-	var pres = document.getElementsByTagName('pre');
-
-	for(n in pres)
-		{
-			if(pres[n].style != null && (pres[n].style.whiteSpace == "pre" || pres[n].style.whiteSpace == "")) {
-					pres[n].style.whiteSpace = "pre-wrap";
-			}
-			else if(pres[n].style != null) {
-				pres[n].style.whiteSpace = "pre";
-			}
-		}
-
-	return false;
-}
-
-function toggleExpand() {
-	if(document.getElementById('lineNumbers').style.maxHeight != "none") {
-			document.getElementById('lineNumbers').style.maxHeight = "none";
-			document.getElementById('lineNumbers').style.width = "auto";
-	}
-	else {
-		document.getElementById('lineNumbers').setAttribute('style', '');
-	}
-	return false;
-}
-
-function toggleStyle(){
-	if(document.getElementById('orderedList').getAttribute('class') == "monoText" || document.getElementById('orderedList').getAttribute('class') == "")
-		document.getElementById('orderedList').setAttribute("class", "plainText");
-	else
-		document.getElementById('orderedList').setAttribute("class", "monoText");
-	return false;
-}
-
-function showAdminTools(hideMe){
-	document.getElementById('showAdminFunctions').style.display = "none";
-	document.getElementById('hiddenAdmin').style.display = "block";
-	return false;
-}
-function showInstructions(){
-	document.getElementById('showInstructions').style.display = "none";
-	document.getElementById('instructions').style.display = "block";
-	return false;
-}
-
-function submitPaste(targetButton) {
-	var disabledButton = document.createElement('input');
-	var parentContainer = document.getElementById('submitContainer');
-	disabledButton.setAttribute('value', 'Posting...');
-	disabledButton.setAttribute('type', 'button');
-	disabledButton.setAttribute('disabled', 'disabled');
-	disabledButton.setAttribute('id', 'dummyButton');
-	targetButton.style.display = "none";
-	parentContainer.appendChild(disabledButton);
-	return true;
-}
-
+echo $_commonJS; ?>
 
 <?php } ?>
 
@@ -2590,123 +2705,7 @@ function checkIfURL(checkMe){
 function checkIfURL(checkMe){
 	return true;
 }
-<?php } ?>
-
-/* AJAXIAN */
-var tab = "    ";
-       
-function catchTab(evt) {
-    var t = evt.target;
-    var ss = t.selectionStart;
-    var se = t.selectionEnd;
- 
-    if (evt.keyCode == 9) {
-        evt.preventDefault();
-               
-        if (ss != se && t.value.slice(ss,se).indexOf("\n") != -1) {
-            var pre = t.value.slice(0,ss);
-            var sel = t.value.slice(ss,se).replace(/\n/g,"\n"+tab);
-            var post = t.value.slice(se,t.value.length);
-            t.value = pre.concat(tab).concat(sel).concat(post);
-                   
-            t.selectionStart = ss + tab.length;
-            t.selectionEnd = se + tab.length;
-        }
-               
-        else {
-            t.value = t.value.slice(0,ss).concat(tab).concat(t.value.slice(ss,t.value.length));
-            if (ss == se) {
-                t.selectionStart = t.selectionEnd = ss + tab.length;
-            }
-            else {
-                t.selectionStart = ss + tab.length;
-                t.selectionEnd = se + tab.length;
-            }
-        }
-    }
-           
-   else if (evt.keyCode==8 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-               
-        t.value = t.value.slice(0,ss - 4).concat(t.value.slice(ss,t.value.length));
-        t.selectionStart = t.selectionEnd = ss - tab.length;
-    }
-           
-    else if (evt.keyCode==46 && t.value.slice(se,se + 4) == tab) {
-        evt.preventDefault();
-             
-        t.value = t.value.slice(0,ss).concat(t.value.slice(ss + 4,t.value.length));
-        t.selectionStart = t.selectionEnd = ss;
-    }
-
-    else if (evt.keyCode == 37 && t.value.slice(ss - 4,ss) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss - 4;
-    }
-    else if (evt.keyCode == 39 && t.value.slice(ss,ss + 4) == tab) {
-        evt.preventDefault();
-        t.selectionStart = t.selectionEnd = ss + 4;
-    }
-}
-
-function showAdminTools(hideMe){
-	document.getElementById('showAdminFunctions').style.display = "none";
-	document.getElementById('hiddenAdmin').style.display = "block";
-	return false;
-}
-function showInstructions(){
-	document.getElementById('showInstructions').style.display = "none";
-	document.getElementById('instructions').style.display = "block";
-	return false;
-}
-
-function toggleWrap() {
-	var n = 0;
-	var pres = document.getElementsByTagName('pre');
-
-	for(n in pres)
-		{
-			if(pres[n].style != null && (pres[n].style.whiteSpace == "pre" || pres[n].style.whiteSpace == "")) {
-					pres[n].style.whiteSpace = "pre-wrap";
-			}
-			else if(pres[n].style != null) {
-				pres[n].style.whiteSpace = "pre";
-			}
-		}
-
-	return false;
-}
-
-function toggleExpand() {
-	if(document.getElementById('lineNumbers').style.maxHeight != "none") {
-			document.getElementById('lineNumbers').style.maxHeight = "none";
-			document.getElementById('lineNumbers').style.width = "auto";
-	}
-	else {
-		document.getElementById('lineNumbers').setAttribute('style', '');
-	}
-	return false;
-}
-
-function toggleStyle(){
-	if(document.getElementById('orderedList').getAttribute('class') == "monoText" || document.getElementById('orderedList').getAttribute('class') == "")
-		document.getElementById('orderedList').setAttribute("class", "plainText");
-	else
-		document.getElementById('orderedList').setAttribute("class", "monoText");
-	return false;
-}
-
-function submitPaste(targetButton) {
-	var disabledButton = document.createElement('input');
-	var parentContainer = document.getElementById('submitContainer');
-	disabledButton.setAttribute('value', 'Posting...');
-	disabledButton.setAttribute('type', 'button');
-	disabledButton.setAttribute('disabled', 'disabled');
-	disabledButton.setAttribute('id', 'dummyButton');
-	targetButton.style.display = "none";
-	parentContainer.appendChild(disabledButton);
-	return true;
-}
+<?php } echo $_commonJS; ?>
 
 </script>
 <?php
@@ -2728,6 +2727,9 @@ else
 
 if(@$_POST['adminAction'] == "delete" && $bin->hasher(hash($CONFIG['pb_algo'], @$_POST['adminPass']), $CONFIG['pb_salts']) === $CONFIG['pb_pass'])
 	{ $db->dropPaste($requri); echo "<div class=\"success\">Paste, " . $requri . ", has been deleted!</div>"; $requri = NULL; }
+
+if(@$_POST['subdomain'] && $error_subdomain)
+	die("<div class=\"result\"><div class=\"error\">Subdomain invalid or already taken!</div></div></div></body></html>");
 
 if($requri != "install" && @$_POST['submit'])
 	{
@@ -2849,9 +2851,8 @@ if($requri != "install" && $CONFIG['pb_recent_posts'] && substr($requri, -1) != 
 	{
 		echo "<div id=\"recentPosts\" class=\"recentPosts\">";
 		$recentPosts = $bin->getLastPosts($CONFIG['pb_recent_posts']);
+		echo "<h2 id=\"newPaste\"><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
 		if($requri || count($recentPosts) > 0)
-			echo "<h2 id=\"newPaste\"><a href=\"" . $bin->linker() . "\">New Paste</a></h2><div class=\"spacer\">&nbsp;</div>";
-
 			if(count($recentPosts) > 0)
 				{					
 					echo "<h2>Recent Pastes</h2>";	
@@ -2933,7 +2934,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 		echo "<div id=\"pastebin\" class=\"pastebin\">"
 			. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
 			$bin->setTagline($CONFIG['pb_tagline'])
-			. "<div id=\"result\">&nbsp;</div>";
+			. "<div id=\"result\"></div>";
 
 		if($pasted = $db->readPaste($requri))
 			{
@@ -3033,7 +3034,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				if($CONFIG['pb_editing']) {
 				echo "<div id=\"formContainer\">
 					<form id=\"pasteForm\" name=\"pasteForm\" action=\"" . $bin->linker($pasted['ID']) . "\" method=\"post\">
-						<div><label for=\"pasteEnter\">Edit this post! " . $lineHighlight . "</label><br />
+						<div><label for=\"pasteEnter\" class=\"pasteEnterLabel\">Edit this post! " . $lineHighlight . "</label>
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\">" . $pasted['Data']['noHighlight']['Dirty'] . "</textarea></div>
 						<div id=\"foundURL\" style=\"display: none;\">URL has been detected...</div>
 						<div class=\"spacer\">&nbsp;</div>";
@@ -3165,7 +3166,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 			echo "<ul id=\"installList\">";
 				echo "<li>Checking Directory is writable. ";
 					if(!is_writable($bin->thisDir()))
-						echo "<span class=\"error\">Directory is not writable!</span> - CHMOD to ". $CONFIG['dir_mode'];
+						echo "<span class=\"error\">Directory is not writable!</span> - CHMOD to 0777";
 					else
 						{ echo "<span class=\"success\">Directory is writable!</span>"; $stage[] = 1; }
 				echo "</li>";
@@ -3194,7 +3195,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				if(count($stage) > 2)
 				{ echo "<li>Checking Database Connection. ";
 					if($db->dbt == "txt")
-						{ if(!is_dir($CONFIG['txt_config']['db_folder'])) { mkdir($CONFIG['txt_config']['db_folder']); mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], $CONFIG['dir_mode']); chmod($CONFIG['txt_config']['db_folder'], $CONFIG['dir_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", $CONFIG['dir_mode']); } $db->write($db->serializer(array()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index']); $db->write($db->serializer($bin->generateForbiddenSubdomains()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'], $CONFIG['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS", $CONFIG['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/index.html", $CONFIG['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);	}
+						{ if(!is_dir($CONFIG['txt_config']['db_folder'])) { mkdir($CONFIG['txt_config']['db_folder']); mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], $CONFIG['txt_config']['dir_mode']); chmod($CONFIG['txt_config']['db_folder'], $CONFIG['txt_config']['dir_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", $CONFIG['txt_config']['dir_mode']); } $db->write($db->serializer(array()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index']); $db->write($db->serializer($bin->generateForbiddenSubdomains()), $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); $db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'], $CONFIG['txt_config']['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_index'] . "_SUBDOMAINS", $CONFIG['txt_config']['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/index.html", $CONFIG['txt_config']['file_mode']); chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", $CONFIG['txt_config']['file_mode']);	}
 					if(!$db->connect())
 						echo "<span class=\"error\">Cannot connect to database!</span> - Check Config in index.php";
 					else
@@ -3210,20 +3211,21 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 							{ echo "<span class=\"error\">Structure failed</span> - Check Config in index.php (Does the table already exist?)"; }
 						else
 							{ echo "<span class=\"success\">Table created!</span>"; 
+							  mysql_query("ALTER TABLE `" . $CONFIG['mysql_connection_config']['db_table'] . "` ORDER BY `Datetime` DESC", $db->link);
 							  $stage[] = 1;
 							  if($CONFIG['mysql_connection_config']['db_existing'])
 								echo "<span class=\"warn\">Attempting to use an existing table!</span> If this is not a Pastebin table a fault will occur."; 
 
 								mkdir($CONFIG['txt_config']['db_folder']);
-								chmod($CONFIG['txt_config']['db_folder'], $CONFIG['dir_mode']);
+								chmod($CONFIG['txt_config']['db_folder'], $CONFIG['txt_config']['dir_mode']);
 								mkdir($CONFIG['txt_config']['db_folder'] . "/subdomain");
-								chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", $CONFIG['dir_mode']);
+								chmod($CONFIG['txt_config']['db_folder'] . "/subdomain", $CONFIG['txt_config']['dir_mode']);
 								mkdir($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images']); 
-								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], $CONFIG['dir_mode']);
+								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'], $CONFIG['txt_config']['dir_mode']);
 								$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/index.html"); 
-								chmod($CONFIG['txt_config']['db_folder'] . "/index.html", $CONFIG['file_mode']);
+								chmod($CONFIG['txt_config']['db_folder'] . "/index.html", $CONFIG['txt_config']['file_mode']);
 								$db->write("FORBIDDEN", $CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html"); 
-								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", $CONFIG['file_mode']);
+								chmod($CONFIG['txt_config']['db_folder'] . "/" . $CONFIG['txt_config']['db_images'] . "/index.html", $CONFIG['txt_config']['file_mode']);
 
 								$forbidden_array = array('ID' => 'forbidden', 'Time_offset' => 10, 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 0, 'Image' => TRUE, 'Protect' => 1, 'Content' => serialize($bin->generateForbiddenSubdomains(TRUE)));
 
@@ -3239,20 +3241,19 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 					if(!$db->write(time(), './INSTALL_LOCK'))
 						echo "<span class=\"error\">Writing Error</span>";
 					else
-						{ echo "<span class=\"success\">Complete</span>"; $stage[] = 1; chmod('./INSTALL_LOCK', $CONFIG['file_mode']); }
+						{ echo "<span class=\"success\">Complete</span>"; $stage[] = 1; chmod('./INSTALL_LOCK', $CONFIG['txt_config']['file_mode']); }
 				echo "</li>"; }
 			echo "</ul>";
 				if(count($stage) > 5)
-				{ $paste_new = array('ID' => $bin->generateRandomString(1), 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 1800, 'Image' => TRUE, 'Protect' => 0, 'Content' => $CONFIG['pb_line_highlight'] . "Congratulations, your pastebin has now been installed!\nThis message will expire in 30 minutes!");
+				{ $paste_new = array('ID' => $bin->generateRandomString($CONFIG['pb_id_length']), 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 1800, 'Image' => TRUE, 'Protect' => 0, 'Content' => $CONFIG['pb_line_highlight'] . "Congratulations, your pastebin has now been installed!\nThis message will expire in 30 minutes!");
 				$db->insertPaste($paste_new['ID'], $paste_new, TRUE);
 				echo "<div id=\"confirmInstalled\"><a href=\"" . $bin->linker() . "\">Continue</a> to your new installation!<br /></div>";
-				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to " . $CONFIG['dir_mode'] . ".</div>"; }
+				echo "<div id=\"confirmInstalled\" class=\"warn\">It is recommended that you now CHMOD this directory to 755</div>"; }
 			echo "</div>";
-
 		} else
 			{
 				if($CONFIG['pb_subdomains'])
-					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showInstructions();\">make a subdomain</a> ]";
+					$subdomainClicker = " [ <a href=\"#\" onclick=\"return showSubdomain();\">make a subdomain</a> ]";
 				else
 					$subdomainClicker = NULL;
 
@@ -3267,7 +3268,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						$subdomain_action = $bin->linker();
 					}
 					
-				$subdomainForm = "<form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form>";
+				$subdomainForm = "<div id=\"subdomainForm\"><strong>Subdomain</strong><br /><form id=\"subdomain_form\" action=\"" . $subdomain_action . "\" method=\"POST\">http://<input type=\"text\" name=\"subdomain\" id=\"subdomain\" maxlength=\"32\" />." . $domain_name . " <input type=\"submit\" id=\"new_subdomain\" name=\"new_subdomain\" value=\"Create Subdomain\" /></form><div class=\"spacer\">&nbsp;</div></div>";
 
 				if(strlen($bin->linker()) < 16)
 					$isShortURL = " If your text is a URL, the pastebin will recognize it and will create a Short URL forwarding page! (Like bit.ly, is.gd, etc)";
@@ -3354,11 +3355,11 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				echo "<div id=\"pastebin\" class=\"pastebin\">"
 				. "<h1>" .  $bin->setTitle($CONFIG['pb_name'])  . "</h1>" .
 				$bin->setTagline($CONFIG['pb_tagline'])
-				. "<div id=\"result\">&nbsp;</div>
+				. "<div id=\"result\"></div>
 				<div id=\"formContainer\">
-				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains " . $service['subdomains']['tip'] . "</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>
+				<div id=\"instructions\" class=\"instructions\"><h2>How to use</h2><div>Fill out the form with data you wish to store online. You will be given an unique address to access your content that can be sent over IM/Chat/(Micro)Blog for online collaboration (eg, " . $bin->linker('z3n') . "). The following services have been made available by the administrator of this server:</div><ul id=\"serviceList\"><li><span class=\"success\">Enabled</span> Text</li><li><span class=\"" . $service['syntax']['style'] . "\">" . $service['syntax']['status'] . "</span> Syntax Highlighting</li><li><span class=\"" . $service['highlight']['style'] . "\">" . $service['highlight']['status'] . "</span> Line Highlighting</li><li><span class=\"" . $service['editing']['style'] . "\">" . $service['editing']['status'] . "</span> Editing</li><li><span class=\"" . $service['clipboard']['style'] . "\">" . $service['clipboard']['status'] . "</span> Copy to Clipboard</li><li><span class=\"" . $service['images']['style'] . "\">" . $service['images']['status'] . "</span> Image hosting</li><li><span class=\"" . $service['image_download']['style'] . "\">" . $service['image_download']['status'] . "</span> Copy image from URL</li><li><span class=\"" . $service['video']['style'] . "\">" . $service['video']['status'] . "</span> Video Embedding (YouTube, Vimeo &amp; DailyMotion)</li><li><span class=\"" . $service['flowplayer']['style'] . "\">" . $service['flowplayer']['status'] . "</span> Flash player for flv/mp4 files.</li><li><span class=\"" . $service['url']['style'] . "\">" . $service['url']['status'] . "</span> URL Shortening/Redirection</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> Visual Effects</li><li><span class=\"" . $service['jQuery']['style'] . "\">" . $service['jQuery']['status'] . "</span> AJAX Posting</li><li><span class=\"" . $service['api']['style'] . "\">" . $service['api']['status'] . "</span> API</li><li><span class=\"" . $service['subdomains']['style'] . "\">" . $service['subdomains']['status'] . "</span> Custom Subdomains</li></ul><div class=\"spacer\">&nbsp;</div><div><strong>What to do</strong></div><div>Just paste your text, sourcecode or conversation into the textbox below, add a name if you wish" . $service['images']['tip'] . " then hit submit!" . $service['url']['tip'] . "" . $service['video']['tip'] . "" . $service['highlight']['tip'] . "</div><div class=\"spacer\">&nbsp;</div><div><strong>Some tips about usage;</strong> If you want to put a message up asking if the user wants to continue, add an &quot;!&quot; suffix to your URL (eg, " . $bin->linker('z3n') . "!).</div>" . $service['api']['tip'] . "<div class=\"spacer\">&nbsp;</div></div>" . $service['subdomains']['tip'] . "
 					<form id=\"pasteForm\" action=\"" . $bin->linker() . "\" method=\"post\" name=\"pasteForm\" enctype=\"multipart/form-data\">
-						<div><label for=\"pasteEnter\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]" . $subdomainClicker . "</span></label><br />
+						<div><label for=\"pasteEnter\" class=\"pasteEnterLabel\">Paste your text" . $service['url']['str'] . " here!" . $service['highlight']['tip'] . " <span id=\"showInstructions\">[ <a href=\"#\" onclick=\"return showInstructions();\">more info</a> ]</span><span id=\"showSubdomain\">" . $subdomainClicker . "</span></label>
 						<textarea id=\"pasteEnter\" name=\"pasteEnter\" onkeydown=\"return catchTab(event)\" " . $event . "=\"return checkIfURL(this);\"></textarea></div>
 						<div id=\"foundURL\" style=\"display: none;\">URL has been detected...</div>
 						<div class=\"spacer\">&nbsp;</div>
@@ -3419,7 +3420,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 ?>
 	<div class="spacer">&nbsp;</div>
 	<div class="spacer">&nbsp;</div>
-	<div id="copyrightInfo">Written by <a href="http://knoxious.co.uk/">Knoxious.co.uk</a>, 2010.</div>
+	<div id="copyrightInfo">Written by <a href="http://xan-manning.co.uk/">Xan Manning</a>, 2010.</div>
 	</div>
 <?php if($bin->_clipboard() && $requri && $requri != "install")
 	echo "<div><span id=\"_clipboard_replace\">YOU NEED FLASH!</span> &nbsp; <span id=\"_clipboardURI_replace\">&nbsp;</span></div>";

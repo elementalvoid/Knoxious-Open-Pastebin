@@ -1,6 +1,5 @@
-
 /*
- *	Knoxious Open Pastebin		 v 1.1.4
+ *	Knoxious Open Pastebin		 v 1.1.10
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -9,15 +8,24 @@
  * 	See the MIT for details (http://opensource.org/licenses/mit-license.php).
  *
  *
- *	A quick to set up, rapid install, one-file pastebin! 
+ *	A quick to set up, rapid install, two-file pastebin! 
  *	(or at least can be)
  *
  *	Supports text and image hosting, url and video linking.
  *
- *	URL: 		http://knoxious.co.uk/
+ *	URL: 		http://xan-manning.co.uk/
  *	EXAMPLE: 	http://pzt.me/
  *
  */
+
+
+CONTENTS
+------------------------------------------------------------------------------
+
+	1. 	Authors / Contributors
+	2.	Requirements
+	3.	Installation
+	4.	Copying
 
 
 
@@ -27,6 +35,56 @@ AUTHORS/CONTRIBUTORS
 	+	Xan Manning		(xan[dot]manning[at]gmail[dot]com)
 	+	Matt Klich		(https://github.com/elementalvoid)
 
+
+
+REQUIREMENTS
+------------------------------------------------------------------------------
+A number of systems have been tested in the production of this Pastebin,
+some setups are better than others but we have two grades of setup below.
+
+	Recommended
+	===========================================================
+		Linux*
+			+	Apache2
+			+	PHP 5.2+
+			+	MySQL (Optional)
+			+	Git or Mercurial (Optional)
+
+
+	Confirmed to work
+	===========================================================
+		Linux*
+			+	Lighttpd + FastCGI
+			+	nginx + FastCGI
+
+		Windows Server 2008 R2
+			+	IIS 7.5
+			+	Apache2
+
+	
+	Pending Investigation - If it works on Linux it will
+	likely run on the Windows/Mac/FreeBSD release.
+	==========================================================
+		Linux*
+			+	cherokee
+			+	litespeed
+
+		Windows Server 2003
+			+	IIS 6
+
+		Windows Server 2008
+			+	IIS 7
+
+		FreeBSD
+
+		Mac OS X
+
+
+	* Linux OS tested were, will undoubtably run on all others:
+			+	Debian (Lenny and Squeeze)
+			+	Ubuntu (9.10, 10.04)
+			+	CentOS 5
+			+	Fedora Core 11, 12	
 
 
 

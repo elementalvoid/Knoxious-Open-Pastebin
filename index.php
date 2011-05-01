@@ -24,7 +24,7 @@ define('ISINCLUDED', 1);
 
 require("config.php");
 
-if(strtolower($_SERVER['HTTPS']) == "on")
+if(strtolower(@$_SERVER['HTTPS']) == "on")
 	$CONFIG['pb_protocol'] = "https";
 else
 	$CONFIG['pb_protocol'] = "http";

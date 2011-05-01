@@ -1892,7 +1892,7 @@ if($requri == "api")
 							elseif(strlen(@$_FILES['pasteImage']['name']) > 4 && !$CONFIG['pb_images'])
 								$result = array('ID' => 0, 'error' => '"E02d"', 'message' => "Image hosting disabled.");
 							else
-								$result = array('ID' => 0, 'error' => '"E01a"', 'message' => "Invalid POST request. Pasted text must be between 10 characters and " . $bin->humanReadableFilesize($CONFIG['pb_max_bytes')]);
+								$result = array('ID' => 0, 'error' => '"E01a"', 'message' => "Invalid POST request. Pasted text must be between 10 characters and " . $bin->humanReadableFilesize($CONFIG['pb_max_bytes']));
 						}
 
 

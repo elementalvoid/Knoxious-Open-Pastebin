@@ -1892,7 +1892,7 @@ if($requri == "api")
 							elseif(strlen(@$_FILES['pasteImage']['name']) > 4 && !$CONFIG['pb_images'])
 								$result = array('ID' => 0, 'error' => '"E02d"', 'message' => "Image hosting disabled.");
 							else
-								$result = array('ID' => 0, 'error' => '"E01a"', 'message' => "Invalid POST request or 'pasteEnter' is Too Big / Empty.");
+								$result = array('ID' => 0, 'error' => '"E01a"', 'message' => "Invalid POST request. Pasted text must be between 10 characters and " . $bin->humanReadableFilesize($CONFIG['pb_max_bytes')]);
 						}
 
 
@@ -2849,7 +2849,7 @@ if($requri != "install" && @$_POST['submit'])
 			elseif(!$CONFIG['pb_images'] && strlen(@$_FILES['pasteImage']['name']) > 4)
 				echo "<div class=\"warn\">Nope, we don't host images!</div>";
 			else
-				echo "<!-- Don't think it was the file upload... -->";
+				echo "<div class=\"warn\">Pasted text must be between 10 characters and " . $bin->humanReadableFilesize($CONFIG['pb_max_bytes']) . "</div>";
 		}
 	}
 

@@ -2433,6 +2433,7 @@ function submitPaste(targetButton) {
 				}
 
 				function submitPaste(targetButton){
+					$('.error').remove();
 					var buttonElement = $(targetButton);
 					var parentForm = $('#pasteForm');
 					<?php if($requri) { ?>
@@ -2509,7 +2510,7 @@ function submitPaste(targetButton) {
 										{
 											buttonElement.css({ display: "block" });
 											$('#dummyButton').remove();
-											$('#result').prepend('<div class="error" id="' + objData.error + '">' + objData.message + '</div><div class="spacer">&nbsp;</div>');
+											$('#result').prepend('<div class="error" id="' + objData.error + '">' + objData.message + '<div class="spacer">&nbsp;</div></div>');
 										} else
 											{
 												buttonElement.attr('value', 'Submit your Paste');

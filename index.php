@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.12
+ *	Knoxious Open Pastebin		 v 1.1.13
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)

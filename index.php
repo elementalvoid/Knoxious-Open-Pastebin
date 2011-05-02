@@ -2510,7 +2510,7 @@ function submitPaste(targetButton) {
 										{
 											buttonElement.css({ display: "block" });
 											$('#dummyButton').remove();
-											$('#result').prepend('<div class="error" id="' + objData.error + '">' + objData.message + '<div class="spacer">&nbsp;</div></div>');
+											$('#result').prepend('<div class="error" id="' + objData.error + '">' + objData.message + '</div>');
 										} else
 											{
 												buttonElement.attr('value', 'Submit your Paste');

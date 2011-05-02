@@ -87,6 +87,12 @@ $CONFIG['pb_rewrite'] = FALSE;
 $CONFIG['pb_subdomains'] = FALSE;
 # $CONFIG['pb_subdomains'] = TRUE;
 
+// Disable HTTPS for Subdomains (Class 1 Issue)
+// The pastebin supports HTTPS however class 1 does not
+// work with subdomains.
+$CONFIG['pb_https_class_1'] = FALSE;
+# $CONFIG['pb_https_class_1'] = TRUE;
+
 // Enable GZip compression
 // WARNING: Requires more CPU
 $CONFIG['pb_gzip'] = FALSE;

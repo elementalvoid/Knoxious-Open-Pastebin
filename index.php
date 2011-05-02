@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.11
+ *	Knoxious Open Pastebin		 v 1.1.12
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -1479,6 +1479,9 @@ $bin->db->config['pb_pass'] = $CONFIG['pb_pass'];
 if(file_exists('./INSTALL_LOCK') && @$_POST['subdomain'] && $CONFIG['pb_subdomains'])
 	{
 		$seed = $bin->makeSubdomain(@$_POST['subdomain']);
+		if($CONFIG['pb_https_class_1'])
+			$CONFIG['pb_protocol'] = "http";
+
 		if($seed)
 			header("Location: " . str_replace($CONFIG['pb_protocol'] . "://", $CONFIG['pb_protocol'] . "://" . $seed . ".", $bin->linker()));
 		else

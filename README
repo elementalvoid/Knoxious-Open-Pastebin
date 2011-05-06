@@ -83,7 +83,7 @@ some setups are better than others but we have two grades of setup below.
 			+	nginx + FastCGI
 
 		Windows Server 2008 R2
-			+	IIS 7.5
+			+	IIS 7.5 + FastCGI
 			+	Apache2
 
 	

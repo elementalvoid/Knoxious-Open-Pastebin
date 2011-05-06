@@ -79,6 +79,8 @@ $CONFIG['pb_salts'] = array(	1 => "str001",
 // TRUE or FALSE
 $CONFIG['pb_rewrite'] = FALSE;
 # $CONFIG['pb_rewrite'] = TRUE;
+//uncomment next line if you want KOP to attempt to setup rewriting for you on installation. (or when broken/updated)
+//$CONFIG['pb_rewriteauto']=TRUE;
 
 // Subdomain support? This will let people have their
 // own subdomains for their pastebin.

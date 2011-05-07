@@ -3261,17 +3261,19 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 									echo "<span class=\"error\">Microsoft IIS configuration file was unable to setup.</span>";
 								}
 							}
-						} elseif($_SERVER['SERVER_SOFTWARE'] == "Apache2") {
+						} elseif(stristr($_SERVER['SERVER_SOFTWARE'], "apache")) {
 							//unfinished, someone with apache test this or give me (shadowmajestic) the replies for $_SERVER['SERVER_SOFTWARE'] from apache/httpd2
 							if(file_exists(".htaccess")){
 								echo "<span class=\"error\">Apache2 configuration file already in place. Please remove if you want Knoxious Open pastebin to use its own.</span>";
 							} else {
-								if(copy("rewrite/.htaccess", "./.htaccess")) {
+								if(copy("rewrite/htaccess", "./.htaccess")) {
 									echo "<span class=\"success\">Apache2 configuration file has been setup.</span>";
 								} else {
 									echo "<span class=\"error\">Apache2 configuration file was unable to setup.</span>";
 								}
 							}
+						} else {
+							echo "<span class=\"warn\">This is not an Apache2 or IIS7+ server.</span>";
 						}
 						echo "</li>";
 					}

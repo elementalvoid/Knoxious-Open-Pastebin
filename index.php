@@ -3247,7 +3247,39 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 							echo "<span class=\"success\">Table created!</span>"; $stage[] = 1;
 						}
 				echo "</li>"; }
-				if(count($stage) > 4)
+				
+				if(count($stage) > 4) {
+					if($CONFIG['pb_rewriteauto']) {
+						echo "<li>Setting up Rewrite";
+						if(($_SERVER['SERVER_SOFTWARE']=="Microsoft-IIS/7.5") || ($_SERVER['SERVER_SOFTWARE']=="Microsoft-IIS/7.0")) {
+							if(file_exists("web.config")){
+								echo "<span class=\"error\">Microsoft IIS configuration file already in place. Please remove if you want Knoxious Open pastebin to use its own.</span>";
+							} ELSE {
+								if(copy("rewrite/web.config", "./web.config")) {
+									echo "<span class=\"success\">Microsoft IIS configuration file has been setup.</span>";
+								} ELSE {
+									echo "<span class=\"error\">Microsoft IIS configuration file was unable to setup.</span>";
+								}
+							}
+						} ELSE IF($_SERVER['SERVER_SOFTWARE']=="Apache2") {
+							//unfinished, someone with apache test this or give me (shadowmajestic) the replies for $_SERVER['SERVER_SOFTWARE'] from apache/httpd2
+							if(file_exists(".htaccess")){
+								echo "<span class=\"error\">Apache2 configuration file already in place. Please remove if you want Knoxious Open pastebin to use its own.</span>";
+							} ELSE {
+								if(copy("rewrite/.htaccess", "./.htaccess")) {
+									echo "<span class=\"success\">Apache2 configuration file has been setup.</span>";
+								} ELSE {
+									echo "<span class=\"error\">Apache2 configuration file was unable to setup.</span>";
+								}
+							}
+						}
+						echo "</li>";
+					}
+					$stage[] = 1;
+				}
+				
+				
+				if(count($stage) > 5)
 				{ echo "<li>Locking Installation. ";					
 					if(!$db->write(time(), './INSTALL_LOCK'))
 						echo "<span class=\"error\">Writing Error</span>";
@@ -3255,7 +3287,7 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 						{ echo "<span class=\"success\">Complete</span>"; $stage[] = 1; chmod('./INSTALL_LOCK', $CONFIG['txt_config']['file_mode']); }
 				echo "</li>"; }
 			echo "</ul>";
-				if(count($stage) > 5)
+				if(count($stage) > 6)
 				{ $paste_new = array('ID' => $bin->generateRandomString($CONFIG['pb_id_length']), 'Author' => 'System', 'IP' => $_SERVER['REMOTE_ADDR'], 'Lifespan' => 1800, 'Image' => TRUE, 'Protect' => 0, 'Content' => $CONFIG['pb_line_highlight'] . "Congratulations, your pastebin has now been installed!\nThis message will expire in 30 minutes!");
 				$db->insertPaste($paste_new['ID'], $paste_new, TRUE);
 				echo "<div id=\"confirmInstalled\"><a href=\"" . $bin->linker() . "\">Continue</a> to your new installation!<br /></div>";

@@ -2,7 +2,7 @@
  *	Knoxious Open Pastebin		 v 1.1.14
  * ============================================================================
  *	
- *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
+ *	Copyright (c) 2009-2011 Xan Manning (http://xan-manning.co.uk/)
  *
  * 	Released under the terms of the MIT License.
  * 	See the MIT for details (http://opensource.org/licenses/mit-license.php).
@@ -84,7 +84,7 @@ some setups are better than others but we have two grades of setup below.
 			+	nginx + FastCGI
 
 		Windows Server 2008 R2
-			+	IIS 7.5
+			+	IIS 7.5 + FastCGI
 			+	Apache2
 
 	
@@ -133,7 +133,7 @@ INSTALLATION
 COPYING
 ------------------------------------------------------------------------------
 
-Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk)
+Copyright (c) 2009-2011 Xan Manning (http://xan-manning.co.uk)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

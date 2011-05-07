@@ -3251,24 +3251,24 @@ if($requri && $requri != "install" && substr($requri, -1) != "!")
 				if(count($stage) > 4) {
 					if($CONFIG['pb_rewriteauto']) {
 						echo "<li>Setting up Rewrite";
-						if(($_SERVER['SERVER_SOFTWARE']=="Microsoft-IIS/7.5") || ($_SERVER['SERVER_SOFTWARE']=="Microsoft-IIS/7.0")) {
+						if(($_SERVER['SERVER_SOFTWARE'] == "Microsoft-IIS/7.5") || ($_SERVER['SERVER_SOFTWARE'] == "Microsoft-IIS/7.0")) {
 							if(file_exists("web.config")){
 								echo "<span class=\"error\">Microsoft IIS configuration file already in place. Please remove if you want Knoxious Open pastebin to use its own.</span>";
-							} ELSE {
+							} else {
 								if(copy("rewrite/web.config", "./web.config")) {
 									echo "<span class=\"success\">Microsoft IIS configuration file has been setup.</span>";
-								} ELSE {
+								} else {
 									echo "<span class=\"error\">Microsoft IIS configuration file was unable to setup.</span>";
 								}
 							}
-						} ELSE IF($_SERVER['SERVER_SOFTWARE']=="Apache2") {
+						} elseif($_SERVER['SERVER_SOFTWARE'] == "Apache2") {
 							//unfinished, someone with apache test this or give me (shadowmajestic) the replies for $_SERVER['SERVER_SOFTWARE'] from apache/httpd2
 							if(file_exists(".htaccess")){
 								echo "<span class=\"error\">Apache2 configuration file already in place. Please remove if you want Knoxious Open pastebin to use its own.</span>";
-							} ELSE {
+							} else {
 								if(copy("rewrite/.htaccess", "./.htaccess")) {
 									echo "<span class=\"success\">Apache2 configuration file has been setup.</span>";
-								} ELSE {
+								} else {
 									echo "<span class=\"error\">Apache2 configuration file was unable to setup.</span>";
 								}
 							}

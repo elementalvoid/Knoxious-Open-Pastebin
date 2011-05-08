@@ -2478,8 +2478,7 @@ function submitPaste(targetButton) {
 										$('#result').prepend('<div class="error" id="' + msg.error + '">' + msg.message + '</div>');
 									} else
 										{
-								buttonElement.attr('value', 'Submit your Paste');
-        							$('#result').prepend('<div class="success">Your paste has been successfully recorded!</div><div class="confirmURL">URL to your paste is <a href="' + msg.url + '">' + msg.url + '</a></div>');
+											window.location=msg.url;
 										}
 
 								window.scrollTo(0,0); 

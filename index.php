@@ -1,7 +1,7 @@
 <?php 
 
 /*
- *	Knoxious Open Pastebin		 v 1.1.14
+ *	Knoxious Open Pastebin		 v 1.1.15
  * ============================================================================
  *	
  *	Copyright (c) 2009-2010 Xan Manning (http://xan-manning.co.uk/)
@@ -2519,8 +2519,8 @@ function submitPaste(targetButton) {
 											$('#result').prepend('<div class="error" id="' + objData.error + '">' + objData.message + '</div>');
 										} else
 											{
-												$('#result').prepend('<div class="success"><a href="' + msg.url + '">Redirecting</a>...</div>');
-												window.location = msg.url;
+												$('#result').prepend('<div class="success"><a href="' + objData.url + '">Redirecting</a>...</div>');
+												window.location = objData.url;
 											}
 									setTimeout(function(){ iFrame.remove(); }, 100);
 									window.scrollTo(0,0);

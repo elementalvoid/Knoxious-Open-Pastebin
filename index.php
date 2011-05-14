@@ -1805,7 +1805,7 @@ if ($requri != "install" && $requri != NULL && substr($requri, - 1) != "!" && ! 
         if ($db->dbt == "mysql")
             $pasted = $pasted[0];
 
-        header("Content-Type: text/plain");
+        header("Content-Type: text/plain; charset=utf-8");
         die($db->rawHTML($bin->noHighlight($pasted['Data'])));
     } else
         die('There was an error!');

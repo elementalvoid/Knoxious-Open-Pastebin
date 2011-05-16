@@ -589,8 +589,6 @@ class bin
             $id = $this->generateRandomString($this->db->getLastID());
         elseif ($iterations > 3 && $id != FALSE)
             $id = $this->generateRandomString($this->db->getLastID() + 1);
-        else
-            $id = $id;
 
         if (! $id)
             $id = $this->generateRandomString($this->db->getLastID());
@@ -1060,7 +1058,6 @@ class bin
                     $subdomain_list[] = $subdomain;
                     $subdomain_list = $this->db->serializer($subdomain_list);
                     $this->db->write($subdomain_list, $subdomainsFile);
-                    $subdomain = $subdomain;
                     mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain);
                     chmod($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain, $this->db->config['txt_config']['dir_mode']);
                     mkdir($this->db->config['txt_config']['db_folder'] . "/subdomain/" . $subdomain . "/" . $this->db->config['txt_config']['db_images']);

@@ -3406,7 +3406,7 @@ if ($requri && $requri != "install" && substr($requri, - 1) != "!") {
 							</form>
 						</div></div>";
     die("</div></body></html>");
-} elseif (isset($requri) && $requri == "install" && substr($requri, - 1) != "!") {
+} elseif (isset($requri) && $requri == "install") {
     $stage = array();
     echo "<div id=\"installer\" class=\"installer\">" . "<h1>Installing Pastebin</h1>";
 

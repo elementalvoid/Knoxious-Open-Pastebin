@@ -83,16 +83,12 @@ class db
 
     public function serializer($data)
     {
-        $serialize = serialize($data);
-        $output = $serialize;
-        return $output;
+        return serialize($data);
     }
 
     public function deserializer($data)
     {
-        $unserialize = unserialize($data);
-        $output = $unserialize;
-        return $output;
+        return unserialize($data);
     }
 
     public function read($file)
@@ -317,14 +313,12 @@ class db
 
     public function lessHTML($input)
     {
-        $output = htmlspecialchars($input);
-        return $output;
+        return htmlspecialchars($input);
     }
 
     public function dirtyHTML($input)
     {
-        $output = htmlspecialchars(stripslashes($input));
-        return $output;
+        return htmlspecialchars(stripslashes($input));
     }
 
     public function rawHTML($input)
@@ -577,8 +571,7 @@ class bin
 
     public function thisDir()
     {
-        $output = dirname($_SERVER['SCRIPT_FILENAME']);
-        return $output;
+        return dirname($_SERVER['SCRIPT_FILENAME']);
     }
 
     public function generateID($id = FALSE, $iterations = 0)
@@ -1226,8 +1219,7 @@ class bin
 
     public function cookieName()
     {
-        $output = strtoupper(sha1(str_rot13(md5($_SERVER['REMOTE_ADDR'] . $_SERVER['SERVER_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))));
-        return $output;
+        return strtoupper(sha1(str_rot13(md5($_SERVER['REMOTE_ADDR'] . $_SERVER['SERVER_ADDR'] . $_SERVER['HTTP_USER_AGENT'] . $_SERVER['SCRIPT_FILENAME']))));
     }
 
     public function generateVideoEmbedCode($url)
@@ -1304,8 +1296,7 @@ class bin
                 break;
         }
 
-        $output = str_replace("{VIDEO}", $vidID, $output);
-        return $output;
+        return str_replace("{VIDEO}", $vidID, $output);
     }
 }
 
